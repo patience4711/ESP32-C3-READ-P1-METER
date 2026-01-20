@@ -16,6 +16,8 @@ The software has been tested on a Sagemcom T210 meter and works good.
 The next step is make it work with other meters. For that purpose i added options to configure the properties of the serial connection (baud, parity stopbit) , is it a 3 phase meter and should the rx line be inverted. Now we can adapt the system to meters with deviant serial properties. Testing however is hard because i have only one meter. In general, the system is capable of reading the telegrams of various meters if they have an "open collector" port. The signal inversion is configurable in the software so no hardware signal inverter is needed.
 
 Since the esp32c3 has bluetooth capablities, i can invest how to make use of that for this project.
+## adding meters
+If you got an "unknown' (not in the dropdown list) meter working, please post a screenshot of your settingspage so that the meter can be added to the system. Thanks.
 
 ## links
 Here are some links to the projects where i got my inspiration (thanks to all for the good work they did.)
