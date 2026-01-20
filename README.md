@@ -1,10 +1,12 @@
 # ESP32-C3-READ-P1-METER
 
-The purpose of this project is to read data from a so called smart meter (model Sagecom 210 ESMR5 or others) via its serial port. And make the data available for e.g. a battery, a solar diverter or just for administration. It is compatible with the Homewizzard p1 dongle. All we have to do is connect an ESP32C3 device (tested with ESP32C3 super mini) via an rj11 cable to the serial port of the meter. (I use a cable that is 15m long). The data is made available via mosquitto or an API and is also displayed on the frontpage of the webinterface.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>
+The purpose of this project is to read data from a so called smart meter (model Sagecom 210 ESMR5 or others) via its serial port. And make the data available for e.g. a battery, a solar diverter or just for administration. It is compatible with the Homewizzard p1 dongle. 
+
+All we have to do is connect an ESP32C3 device (tested with ESP32C3 super mini) via an rj11 cable to the serial port of the meter. (I use a cable that is 15m long). The data is made available via mosquitto or an API and is also displayed on the frontpage of the webinterface.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>
 
 ![frontpage](https://github.com/patience4711/ESP-READ-P1-METER/assets/12282915/bb65cf1f-f6bf-4e1c-ae48-c379628f3a7a)<br>
 
-I know this has been done before but not on this platform. The esp32c3 is very small and can be fed with the 5v of the p1 meter. Since i have other projects which partially use the same software, it is only a small step to adapt it to a new function. So it inherits many nice features from the other projects. 
+I know this has been done before but not on this platform and not compatible with homewizzard. The esp32c3 is very small and can be fed with the 5v of the p1 meter. Since i have other projects which partially use the same software, it is only a small step to adapt it to a new function. So it inherits many nice features from the other projects. 
 
 The program has a lot of smart features. All settings can be done via the webinterface. Because the ESP has only one reliable working hardware serial port, this port is dedicated to the serial communication with the p1 meter. For the debugging we can use a web console just like in my other projects where the serial port is dedicated to the zigbee module. In the console we can call some processes and watch the output. 
 See the [WIKI](https://github.com/patience4711/ESP-READ-P1-METER/wiki) for information on building it, the working, etc. 
