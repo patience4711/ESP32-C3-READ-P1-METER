@@ -8,10 +8,12 @@ void handleForms(AsyncWebServerRequest *request) {
          // received form basisconfig
          strcpy(userPwd, request->arg("pw1").c_str());
          meterType   =          request->arg("mtype").toInt(); //values are 0 1 2
-         pollFreq   =           request->arg("pfreq").toInt(); //values are 30 60 300
-         if(request->hasParam("pL")) Polling = true; else Polling = false;
+         pollFreq   =           request->arg("pfreq").toInt(); //values are 0 30 60 300
+         //if(request->hasParam("pL")) Polling = true; else Polling = false;
          if(request->hasParam("debug")) diagNose = true;  else diagNose = false;
-  
+         if(request->hasParam("3ph")) threePhase = true;  else threePhase = false;
+         if(request->hasParam("baud")) baudRate9600 = true;  else baudRate9600 = false;
+         if(request->hasParam("rxI")) rxInvert = true;  else rxInvert = false;
          basisConfigsave();  // alles opslaan
          return; 
      } else 
@@ -31,7 +33,7 @@ void handleForms(AsyncWebServerRequest *request) {
      if(request->hasParam("mqtAdres")) {
         // form mosquitto received
         strcpy( Mqtt_Broker  , request->getParam("mqtAdres")   ->value().c_str() );
-        Mqtt_Port = request->arg("mqtPort").toInt();
+        strcpy(Mqtt_Port     , request->getParam("mqtPort")    ->value().c_str() );
         strcpy( Mqtt_outTopic, request->getParam("mqtoutTopic")->value().c_str() );
         gas_Idx     =          request->arg("gasidx").toInt();
         el_Idx      =          request->arg("elidx").toInt();

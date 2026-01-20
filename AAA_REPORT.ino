@@ -50,8 +50,8 @@ String putReport(const String& var)
             // we can check if the current values are greater than the ones in the file
             // we can calculate a todate value that would be over the current mont 
             Serial.println("no values in next month so calculate todate"); 
-               if (ECON_LT > MVALS[x].EC_LT ) {
-                 econ_lt = ECON_LT - MVALS[x].EC_LT; //
+               if (CON_LT > MVALS[x].EC_LT ) {
+                 econ_lt = CON_LT - MVALS[x].EC_LT; //
                } else { 
                 Serial.println("could not calculate todate for " + String(x));}
             }  
@@ -59,19 +59,19 @@ String putReport(const String& var)
             if( MVALS[next].EC_HT != 0 &&  MVALS[next].EC_HT > MVALS[x].EC_HT ) { 
                econ_ht = MVALS[next].EC_HT - MVALS[x].EC_HT;
             } else {
-               if (ECON_HT > MVALS[x].EC_HT ) econ_ht = ECON_HT - MVALS[x].EC_HT; //
+               if (CON_HT > MVALS[x].EC_HT ) econ_ht = CON_HT - MVALS[x].EC_HT; //
             }            
 
             if( MVALS[next].ER_LT != 0 &&  MVALS[next].ER_LT > MVALS[x].ER_LT ) { 
                eret_lt = MVALS[next].ER_LT - MVALS[x].ER_LT;
             } else {
-               if (ERET_LT > MVALS[x].ER_LT ) eret_lt = ERET_LT - MVALS[x].ER_LT; //
+               if (RET_LT > MVALS[x].ER_LT ) eret_lt = RET_LT - MVALS[x].ER_LT; //
             } 
             
             if( MVALS[next].ER_HT != 0 &&  MVALS[next].ER_HT > MVALS[x].ER_HT ) { 
                eret_ht = MVALS[next].ER_HT - MVALS[x].ER_HT;
             } else {
-               if (ERET_HT > MVALS[x].ER_HT ) eret_ht = ERET_HT - MVALS[x].ER_HT; //
+               if (RET_HT > MVALS[x].ER_HT ) eret_ht = RET_HT - MVALS[x].ER_HT; //
             }             
 
 

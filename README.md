@@ -1,8 +1,6 @@
 # ESP32-C3-READ-P1-METER
 
-The purpose of this project is to read data from a so called smart meter (model Sagecom 210 ESMR5) via its serial port. And make the data available via an api. This system is compatible with the p1 dongle of homewizzard. It returns the same data when triggered via <ip_of_esp32>/api/v1/data. 
-
-All we have to do is connect an ESP32C3 device (tested with ESP32C3 super mini) via an rj11 cable to the serial port of the meter. (I use a cable that is 15m long). The data is made available via mosquitto or an API and is also displayed on the frontpage of the webinterface.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>
+The purpose of this project is to read data from a so called smart meter (model Sagecom 210 ESMR5) via its serial port. All we have to do is connect an ESP32C3 device (tested with ESP32C3 super mini) via an rj11 cable to the serial port of the meter. (I use a cable that is 15m long). The data is made available via mosquitto or an API and is also displayed on the frontpage of the webinterface.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>
 
 ![frontpage](https://github.com/patience4711/ESP-READ-P1-METER/assets/12282915/bb65cf1f-f6bf-4e1c-ae48-c379628f3a7a)<br>
 
@@ -11,9 +9,11 @@ I know this has been done before but not on this platform. The esp32c3 is very s
 The program has a lot of smart features. All settings can be done via the webinterface. Because the ESP has only one reliable working hardware serial port, this port is dedicated to the serial communication with the p1 meter. For the debugging we can use a web console just like in my other projects where the serial port is dedicated to the zigbee module. In the console we can call some processes and watch the output. 
 See the [WIKI](https://github.com/patience4711/ESP-READ-P1-METER/wiki) for information on building it, the working, etc. 
 
+This program runs on a nodemcu but in future there will be a version for ESP32-C3, not all ESP's can be powered by the meter.
+
 ## status and todo's
 The software has been tested on a Sagemcom T210 meter and works good.
-The next step is make it work with other meters. This is hard because i cannot test. The software is capable of reading the telegrams of other meters if they have an "open collector" port. The signal inversion (when applicable) is done in the software so no hardware signal inverter is needed.
+The next step is make it work with other meters. This is hard because i cannot test. The software is capable of reading the telegrams of other meters if they have an "open collector" port. The signal inversion is done in the software so no signal inverter is needed.
 
 Since the esp32c3 has bluetooth capablities, i can invest how to make use of that for this project.
 

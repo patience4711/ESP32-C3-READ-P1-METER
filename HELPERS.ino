@@ -21,13 +21,14 @@ consoleOut("performing loopback test on uart0");
 
      //now read the answer
      consoleOut("reading Serial");
-     waitSerialAvailable(1);  
+     waitSerial1Available(1);  
      
-     if( Serial.available() ) 
+     if( Serial1.available() ) 
      {
-        int inByte = Serial.read();
+        int inByte = Serial1.read();
         Serial.write(inByte);
-   } else { consoleOut("Serial has no data");}
+     } else 
+     {  consoleOut("Serial1 has no data");}
 }
 
 
@@ -104,10 +105,10 @@ double round0(double value) {
    return (int)(value + 0.5) ;
 }
 
-bool waitSerialAvailable(int howMany) // wait untill something 's available
+bool waitSerial1Available(int howMany) // wait untill something 's available
 {
 ledblink(howMany, 30);
-Serial.println("waitSerialAvailable");
+consoleOut("waitSerial1Available");
     for(int y=0; y < howMany; y++) {
      ledblink(2, 20);        
      Serial.println("y = " + String(y) );
@@ -162,10 +163,10 @@ void showDir() {
           printStruct(bestand, x);
       }
         Serial.println("the current values are:");
-        Serial.println("ECON_LT = " + String(ECON_LT));     
-        Serial.println("ECON_HT = " + String(ECON_HT));
-        Serial.println("ERET_LT = " + String(ERET_LT));
-        Serial.println("ERET_HT = " + String(ERET_HT));
+        Serial.println("CON_LT = " + String(CON_LT));     
+        Serial.println("CON_HT = " + String(CON_HT));
+        Serial.println("RET_LT = " + String(RET_LT));
+        Serial.println("RET_HT = " + String(RET_HT));
         Serial.println("mGAS = " + String(mGAS));     
 }
 
@@ -173,10 +174,10 @@ void writeMonth(int maand) {
   //so if month overflew, the value of end 7 is in 8
 //month goes from 1 - 12 buth the struct from 0 - 12
 // we write all values in the struct with the number of current month -1
-   MVALS[maand].EC_LT = ECON_LT ;
-   MVALS[maand].EC_HT = ECON_HT ;
-   MVALS[maand].ER_LT = ERET_LT ;
-   MVALS[maand].ER_HT = ERET_HT ;
+   MVALS[maand].EC_LT = CON_LT ;
+   MVALS[maand].EC_HT = CON_HT ;
+   MVALS[maand].ER_LT = RET_LT ;
+   MVALS[maand].ER_HT = RET_HT ;
    MVALS[maand].mGAS    = mGAS;
 // write this in SPIFFS
    String bestand = "//mvalues_" + String(maand) + ".str"; // month5.str

@@ -1,46 +1,45 @@
 bool mqttConnect() {   // 
 /* this function checks if we are connected to the broker, if not connect anyway */  
+   
     if( MQTT_Client.connected() ) {
-    if(diagNose) ws.textAll("mqtt was connected");
+    consoleOut("mqtt was connected");
     return true;
     }
+     consoleOut(F("\nconnect mqtt"));
     // we are here because w'r not connected. Signal with the LED
-    ledblink(2,70);
+    //ledblink(2,70);
 
-    if (Mqtt_Port == 0 ) { Mqtt_Port = 1883;}   // just in case ....
+    //if (Mqtt_Port == 0 ) { Mqtt_Port = 1883;}   // just in case ....
     uint8_t retry = 3;
     
-    char Mqtt_inTopic[11]={"ESP-ECU/in"};
+    //char Mqtt_inTopic[11]={"ESP-ECU/in"};
 
     while (!MQTT_Client.connected()) {
 
       if ( MQTT_Client.connect( Mqtt_Clientid, Mqtt_Username, Mqtt_Password) )
       {
          //connected, so subscribe to inTopic (not for thingspeak)
-        if(Mqtt_Format != 5 ) {
-           if(  MQTT_Client.subscribe ( Mqtt_inTopic ) ) { 
-               if(diagNose) ws.textAll("subscribed to " + String(Mqtt_inTopic ));
+        if( Mqtt_Format != 0 ) {
+           //String sub = "ESP32-" + getChipId(true) + "/in"; // to get a intopic ESP32-234567/in
+           if( MQTT_Client.subscribe ( Mqtt_inTopic ) ) {
+               consoleOut("subscribed to " + String(Mqtt_inTopic));
            }
         }
-         if(diagNose) ws.textAll(F("mqtt connected"));
-         #ifdef LOG 
-         Update_Log(3, "connected"); 
-         #endif
+         consoleOut(F("mqtt connected"));
+        // UpdateLog(3, "connected");
       
        return true;
 
     } else {
         //String term = "connection failed state: " + String(MQTT_Client.state());
-        #ifdef LOG 
-        Update_Log(3, "failed"); 
-        #endif
+        //UpdateLog(3, "failed");
         if (!--retry) break; // stop when tried 3 times
         delay(500);
     }
   }
   // if we are here , no connection was made.
 
-  if(diagNose) ws.textAll(F("mqtt connection failed"));
+  consoleOut(F("mqtt connection failed"));
   return false;
 }
 
@@ -59,7 +58,7 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
     
    // ws.textAll("mqtt received " + Payload);
 
-    StaticJsonDocument<1024> doc;       // We use json library to parse the payload                         
+    JsonDocument doc;       // We use json library to parse the payload                         
    //  The function deserializeJson() parses a JSON input and puts the result in a JsonDocument.
    // DeserializationError error = deserializeJson(doc, Payload); // Deserialize the JSON document
     DeserializationError error = deserializeJson(doc, payload); // Deserialize the JSON document
@@ -72,17 +71,17 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
     // We check the kind of command format received with MQTT
     //now we have a payload like {"poll",1}    
 
-    if( doc.containsKey("poll") )
+    if( !doc["poll"].isNull() )
     {
         //int inv = doc["poll"].as<int>(); 
         consoleLog( "got message containing \"poll\"");
 
-        if(!Polling)
+        if(pollFreq == 0)
         {
              actionFlag = 26; // takes care for the polling
               return;
             } else {
-               consoleLog("error, automatic polling is on");
+               consoleLog("forbidden, automatic polling is on");
               return;         
             }
         }
@@ -90,4 +89,43 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
         {
           consoleLog("polling = automatic, skipping");
         }
+}
+
+void sendMqtt(bool gas) {
+
+if(Mqtt_Format == 0) return;  
+
+  char Mqtt_send[26]={0};  
+  strcpy(Mqtt_send, Mqtt_outTopic);
+//  if( Mqtt_send[strlen(Mqtt_send)-1] == '/' ) {
+//    strcat(Mqtt_send, String(Inv_Prop[which].invIdx).c_str());
+//  }
+  bool reTain = false;
+  char pan[50]={0};
+  char tail[40]={0};
+  char toMQTT[512]={0};
+
+// the json to p1 domoticz must be something like {"command":"udevice", "idx":1234, "svalue":"lu;hu;lr;hr;ac;ar"}
+// the json to gas {"command":"udevice", "idx":1234, "svalue":"3.45"} 
+//where lu is low tariff usage Wh, hu is high tariff usage  Wh), lr is low tariff return Wh), 
+//hr is high tariff return  Wh, ac is actual power consumption (in W) and ar is actual return W .  
+   switch( Mqtt_Format)  { 
+    case 1: 
+       if(!gas) {
+        snprintf(toMQTT, sizeof(toMQTT), "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\"}" , el_Idx, CON_LT*1000 , CON_HT*1000, RET_LT*1000, RET_HT*1000, POWER_CON[0], POWER_RET[0]);
+       } else {
+        snprintf(toMQTT, sizeof(toMQTT), "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%.3f;\"}", gas_Idx, mGAS);
+       }
+       break;
+    case 2:
+       snprintf(toMQTT, sizeof(toMQTT), "{\"econ_lt\":%.2f,\"econ_ht\":%.2f,\"eret_ht\":%.2f,\"eret_lt\":%.2f,\"actualp_con\":%.2f,\"actualp_ret\":%.2f,\"gas\":%.3f}" , CON_LT, CON_HT, RET_LT, RET_HT, POWER_CON[0], POWER_RET[0], mGAS);
+       break;
+    case 3:
+       snprintf(toMQTT, sizeof(toMQTT), "field1=%.3f&field2=%.3f&field3=%.3f&field4=%.3f&field5=%.0f&field6=%.0f&field7=%.3f&status=MQTTPUBLISH" ,CON_LT, CON_HT, RET_LT, RET_HT, POWER_CON[0], POWER_RET[0], mGAS);
+       reTain=false;
+       break;
+     }
+
+   // mqttConnect() checks first if we are connected, if not we connect anyway
+   if(mqttConnect() ) MQTT_Client.publish ( Mqtt_send, toMQTT, reTain );
 }

@@ -28,14 +28,20 @@ const char BASISCONFIG[] PROGMEM = R"=====(
     <option value='1' mtype_1>SAGEMCOM XS210_D ESMR5</option>
     <option value='2' mtype_2>LANDIS GYR E350 ZMF100</option></select>
     </tr>  
-  <tr><td class="cap">polling frequency<td><select name='pfreq' class='sb1' id='sel2' >
-    <option value='30' pfreq_0>every 30 sec</option>
-    <option value='60' pfreq_1>every 1 min</option>
-    <option value='300' pfreq_2>every 5 min</select>
+    <tr><td>baud 9600<td><input type='checkbox' style='width:30px; height:30px;' name='baud' #sjik ></input></td></tr>
+    <tr><td>rxInvert:<td><input type='checkbox' style='width:30px; height:30px;' name='rxI' #check></input></td><tr>
+    <tr><td>3phase meter:<td><input type='checkbox' style='width:30px; height:30px;' name='3ph' #sjak ></input></td></tr>
+    <tr><td class="cap">polling frequency<td><select name='pfreq' class='sb1' id='sel2' >
+    <option value='0' pfreq_0>no polling</option>
+    <option value='30' pfreq_1>every 30 sec</option>
+    <option value='60' pfreq_2>every 1 min</option>
+    <option value='300' pfreq_3>every 5 min</select>
+    
+
     </tr>
     
     <tr><td>serial debug:<td><input type='checkbox' style='width:30px; height:30px;' name='debug' #sjek ></input></td></tr>
-    <tr><td>auto polling:<td><input type='checkbox' style='width:30px; height:30px;' name='pL' #check></input></td><tr>
+    
     </table></form>
   </table>
   </div><br>
@@ -43,19 +49,21 @@ const char BASISCONFIG[] PROGMEM = R"=====(
 </body></html>
 )=====";
 
-void zendPageBasis(AsyncWebServerRequest *request) {
+void zendPageBasis(AsyncWebServerRequest *request) 
+{
   String(webPage)="";
     //if(USB_serial) Serial.println("zendPageBasis");
     webPage = FPSTR(HTML_HEAD);
     webPage += FPSTR(BASISCONFIG);
-    
-    // replace data
-    //if(USB_serial) Serial.println("dom_Port= "+ String(dom_Port));
+  
     webPage.replace( "'{pw1}'" , "'" + String(userPwd) + "'") ;
-
+    if (baudRate9600)  webPage.replace("#sjik", "checked");
+    if (threePhase)    webPage.replace("#sjak", "checked");
+    if (rxInvert)      webPage.replace("#check", "checked");
     // terugzetten select
     //if(USB_serial) Serial.println("meterType= "+ String(meterType));
-    switch (meterType) { 
+    switch (meterType) 
+    { 
        case 0:
           webPage.replace("mtype_0", "selected");
           break;
@@ -67,20 +75,23 @@ void zendPageBasis(AsyncWebServerRequest *request) {
           break;
     }       
 
-     switch (pollFreq) { 
-       case 30:
+    switch (pollFreq) 
+    { 
+       case 0:
           webPage.replace("pfreq_0", "selected");
           break;
-       case 60:
+       case 30:
           webPage.replace("pfreq_1", "selected");
           break;
-       case 300:
+       case 60:
           webPage.replace("pfreq_2", "selected");
           break;
+       case 300:
+          webPage.replace("pfreq_3", "selected");
+          break;
     }   
-    
-    if (Polling) { webPage.replace("#check", "checked");   }
-    if (diagNose){ webPage.replace("#sjek","checked"); }
+
+    if (diagNose) webPage.replace("#sjek","checked");
     request->send(200, "text/html", webPage);
     webPage=""; // free up
 }

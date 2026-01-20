@@ -28,8 +28,15 @@ if ( intern ) {    //DebugPrintln("the request comes from inside the network");
             request->send(200, "text/plain", String(teleGram) );
         }
 
+         if ( serverUrl.indexOf("/api/v1/data") > -1) {
+   
+            request->send(200, "text/plain", String(teleGram) );
+        }
+ 
+ 
+ 
         if ( serverUrl.indexOf("/API/poll") > -1) {
-              if(Polling)
+              if(pollFreq != 0)
               {
                  request->send ( 200, "text/plain", "automatic polling, skipping" ); //zend bevestiging
                  return; 

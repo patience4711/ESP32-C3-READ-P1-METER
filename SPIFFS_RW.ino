@@ -85,7 +85,7 @@ void testFilesave() {
       Serial.println("testfile exists, we don't overwrite it");
       return;
     }
-    DynamicJsonDocument doc(1024);
+   JsonDocument doc;
     JsonObject json = doc.to<JsonObject>();   
     json["content"] = teleGram;
 
@@ -101,7 +101,7 @@ void testFilesave() {
 void wifiConfigsave() {
    //DebugPrintln("saving config");
 
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     JsonObject json = doc.to<JsonObject>();   
 //    json["ip"] = static_ip;
     json["pswd"] = pswd;
@@ -125,12 +125,14 @@ void wifiConfigsave() {
 
 void basisConfigsave() {
     //DebugPrintln("saving basis config");
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     JsonObject json = doc.to<JsonObject>();
     json["userPwd"] = userPwd;
     json["meterType"] = meterType;
+    json["baudRate9600"] = baudRate9600;
     json["pollFreq"] = pollFreq;
-    json["Polling"] = Polling;
+    json["threePhase"] = threePhase;
+    json["rxInvert"] = rxInvert;
     json["diagNose"] = diagNose;    
     File configFile = SPIFFS.open("/basisconfig.json", "w");
     if (!configFile) {
@@ -146,7 +148,7 @@ void basisConfigsave() {
 
 void mqttConfigsave() {
    //DebugPrintln("saving mqtt config");
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     JsonObject json = doc.to<JsonObject>();
 
     json["Mqtt_Broker"] = Mqtt_Broker;
@@ -154,6 +156,7 @@ void mqttConfigsave() {
     json["gas_Idx"] = gas_Idx;
     json["el_Idx"] = el_Idx;
     json["Mqtt_outTopic"] = Mqtt_outTopic;
+    json["Mqtt_inTopic"] = Mqtt_inTopic;
     json["Mqtt_Username"] = Mqtt_Username;
     json["Mqtt_Password"] = Mqtt_Password;
     json["Mqtt_Clientid"] = Mqtt_Clientid;    
@@ -172,66 +175,78 @@ void mqttConfigsave() {
 
 
 
-bool file_open_for_read(String bestand) {
+bool file_open_for_read(const char* bestand) 
+{
       Serial.print("we are in file_open_for_read, bestand = "); Serial.println(bestand); 
       if (!SPIFFS.exists(bestand)) return false;
-      
+      JsonDocument doc;
+      String Output = "";
       //file exists, reading and loading
-      //DebugPrintln("bestand bestaat");
+       
         File configFile = SPIFFS.open(bestand, "r");
-        if (!configFile) return false;
-        
-        //DebugPrint("opened config file"); //DebugPrintln(bestand);
-           size_t size = configFile.size();
-          // Allocate a buffer to store contents of the file.
-           std::unique_ptr<char[]> buf(new char[size]);
-           configFile.readBytes(buf.get(), size);
-           DynamicJsonDocument doc(1024);
-           auto error = deserializeJson(doc, buf.get());
-           serializeJson(doc, Serial); Serial.println(F("")); // always serialprint this
-             if (error) return false; 
-              //DebugPrintln("parsed json");
-              String jsonStr = ""; // we printen het json object naar een string
-            // nu kunnen we eerst controleren of een bepaalde entry bestaat
-            // zoniet slaan we die over anders crasht de ESP
-              serializeJson(doc, jsonStr);
-
-            if (bestand == "/testFile.txt") {
-                      if(jsonStr.indexOf("content") > 0){ strcpy(teleGram, doc["content"]);}
-                      Serial.println("\n\nspiffs testFile = " + String(teleGram));          
+        if (configFile) 
+        {
+        DeserializationError error = deserializeJson(doc, configFile);
+        configFile.close();
+        if (error) 
+            {
+                Serial.print(F("Failed to parse config file: "));
+                Serial.println(error.c_str());
+                // Continue with fallback values
+            } else {
+            // no error so we can print the file
+                //serializeJson(doc, Serial);  // always print
+                serializeJson(doc, Output);  // always print
+                Serial.println("here we should see the file content");
+                Serial.println(Output);
             }
+    } else {
+                Serial.print(F("Cannot open config file: "));
+                Serial.println(bestand);
+                // Continue with empty doc -> all fallbacks will be used
+            }
+            if (strcmp(bestand, "testFile.txt"))
+                     {
+                        strcpy(teleGram, doc["content"] | "nothing in spiffs");
+                     }
             
-            if (bestand == "/wificonfig.json") {
+            
+            // we read the file even if it doesn't exist, so that variables are initialized
+            // we read every variable with a fall back value to prevent crashes
+            if (strcmp(bestand, "/wificonfig.json")) {
                       //if(jsonStr.indexOf("ip") > 0){ strcpy(static_ip, doc["ip"]);}
-                      if(jsonStr.indexOf("pswd") > 0){ strcpy(pswd, doc["pswd"]);}
-                      if(jsonStr.indexOf("longi") > 0){longi = doc["longi"].as<float>();}
-                      if(jsonStr.indexOf("lati") > 0){lati = doc["lati"].as<float>();}                      
-                      if(jsonStr.indexOf("gmtOffset") > 0){ strcpy(gmtOffset, doc["gmtOffset"]);}
-                      if(jsonStr.indexOf("zomerTijd") > 0){zomerTijd = doc["zomerTijd"].as<bool>();}
-                      if(jsonStr.indexOf("securityLevel") > 0){securityLevel = doc["securityLevel"].as<int>();}
+                      strcpy(pswd, doc["pswd"] | "0000");
+                      longi = doc["longi"] |  5.734;
+                      lati = doc["lati"]  |   51.432;                     
+                      strcpy(gmtOffset, doc["gmtOffset"] | "+120");
+                      zomerTijd = doc["zomerTijd"].as<bool>() | true;
+                      securityLevel = doc["securityLevel"].as<int>() | 6;
                       //Serial.println("spiffs securityLevel = " + String(securityLevel));
             }
 
-            if (bestand == "/basisconfig.json") {
-                     if(jsonStr.indexOf("userPwd") > 0) { strcpy (userPwd, doc["userPwd"] );}
+            if (strcmp(bestand, "/basisconfig.json")) {
+                     strcpy (userPwd, doc["userPwd"] | "1111");
                      //if(jsonStr.indexOf("dom_Address")   >  0 ) { strcpy(dom_Address,   doc["dom_Address"])         ;}
                      //if(jsonStr.indexOf("dom_Port") >  0 ) { dom_Port = doc["dom_Port"].as<int>() ;} 
-                     if(jsonStr.indexOf("meterType")>  0 ) { meterType = doc["meterType"].as<int>() ;}
-                     if(jsonStr.indexOf("pollFreq")>  0 ) { pollFreq = doc["pollFreq"].as<int>() ;}
-                     if(jsonStr.indexOf("Polling") > 0) {Polling = doc["Polling"].as<bool>();}
-                     if(jsonStr.indexOf("diagNose") > 0) {diagNose = doc["diagNose"].as<bool>();}
+                     threePhase = doc["threePhase"].as<bool>() | false;
+                     baudRate9600 = doc["baudRate9600"].as<bool>() | false;
+                     rxInvert = doc["rxInvert"].as<bool>() | true;
+                     meterType = doc["meterType"].as<int>() | 1;
+                     pollFreq = doc["pollFreq"].as<int>() | 0;
+                     diagNose = doc["diagNose"].as<bool>() | true;
               }            
 
-            if (bestand == "/mqttconfig.json"){
-                     if(jsonStr.indexOf("Mqtt_Broker")   >  0 ) { strcpy(Mqtt_Broker,   doc["Mqtt_Broker"])         ;}
-                     if(jsonStr.indexOf("Mqtt_Port")     >  0 ) { Mqtt_Port =           doc["Mqtt_Port"].as<int>()  ;}
-                     if(jsonStr.indexOf("Mqtt_outTopic") >  0 ) { strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"])       ;}         
-                     if(jsonStr.indexOf("Mqtt_Username") >  0 ) { strcpy(Mqtt_Username, doc["Mqtt_Username"])       ;}
-                     if(jsonStr.indexOf("Mqtt_Password") >  0 ) { strcpy(Mqtt_Password, doc["Mqtt_Password"])       ;}
-                     if(jsonStr.indexOf("Mqtt_Clientid") >  0 ) { strcpy(Mqtt_Clientid, doc["Mqtt_Clientid"])       ;}
-                     if(jsonStr.indexOf("Mqtt_Format")   >  0 ) { Mqtt_Format =         doc["Mqtt_Format"].as<int>();}
-                     if(jsonStr.indexOf("gas_Idx")  >  0 )      { gas_Idx =             doc["gas_Idx"].as<int>() ;}         
-                     if(jsonStr.indexOf("el_Idx")   >  0 )      { el_Idx =              doc["el_Idx"].as<int>() ;}
+            if (strcmp(bestand, "/mqttconfig.json")) {
+                    strcpy(Mqtt_Broker,   doc["Mqtt_Broker"]   | "192.168.0.100");
+                    strcpy(Mqtt_Port,     doc["Mqtt_Port"]     | "1883");  
+                    strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"] | "domoticz/in"); 
+                    strcpy(Mqtt_inTopic,  doc["Mqtt_inTopic"]  | "domoticz/out");        
+                    strcpy(Mqtt_Username, doc["Mqtt_Username"] | "n/a");
+                    strcpy(Mqtt_Password, doc["Mqtt_Password"] | "n/a");
+                    
+                    Mqtt_Format =         doc["Mqtt_Format"].as<int>() | 1;
+                    gas_Idx =             doc["gas_Idx"].as<int>() | 100;         
+                    el_Idx =              doc["el_Idx"].as<int>() | 100;
             }
 
               return true;

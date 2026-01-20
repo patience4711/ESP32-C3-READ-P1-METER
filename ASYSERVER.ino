@@ -174,7 +174,7 @@ server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
     
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     //StaticJsonDocument<160> doc; //(160);
-    DynamicJsonDocument root(240); //(160);
+    JsonDocument root; //(160);
     //long ECON_LT = 0; //Meter reading Electrics - consumption low tariff
     //long ECON_HT = 0; //Meter reading Electrics - consumption high tariff
     //long ERET_LT = 0; //Meter reading Electrics - return low tariff
@@ -183,29 +183,72 @@ server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
     //long PACTUAL_RET = 0;  //Meter reading Electrics - Actual return
     //long mGAS = 0;  //Meter reading Gas
     //long prevGAS = 0;
-    float enReturn = ERET_HT+ERET_LT;
-    float enCons   = ECON_HT+ECON_LT;
-    float Power = PACTUAL_CON - PACTUAL_RET;
+    float enReturn = RET_HT+RET_LT;
+    float enCons   = CON_HT+CON_LT;
+    float Power = POWER_CON[0] - POWER_RET[0];
     root["timestamp"] = String(timeStamp);
 
-    root["ECON_HT"] = round3(ECON_HT);
-    root["ECON_LT"] = round3(ECON_LT); 
+    root["CON_HT"] = round3(CON_HT);
+    root["CON_LT"] = round3(CON_LT); 
     
-    root["ERET_HT"] = round3(ERET_HT);// else root["eNrht"] = "n/a";
-    root["ERET_LT"] = round3(ERET_LT);// else root["eNrlt"] = "n/a";
+    root["RET_HT"] = round3(RET_HT);// else root["eNrht"] = "n/a";
+    root["RET_LT"] = round3(RET_LT);// else root["eNrlt"] = "n/a";
 
-    root["PACTUAL_CON"] = round0(PACTUAL_CON); //else root["pac"] = "n/a";
-    root["PACTUAL_RET"] = round0(PACTUAL_RET); //else root["par"] = "n/a";
+    root["POWER_CON"] = round0(POWER_CON[0]); //else root["pac"] = "n/a";
+    root["POWER_RET"] = round0(POWER_RET[0]); //else root["par"] = "n/a";
 
     root["enR"] = round3(enReturn); //else root["enR"] = "n/a";
     root["enC"] = round3(enCons); //else root["enC"] = "n/a";
     root["aPo"] = round0(Power); //else root["aPo"] = "n/a";
     root["gAs"] = round3(mGAS); //else root["gAs"] = "n/a";
+    root["threePhase"] = threePhase; 
     root["rm"] = remote;
    
     serializeJson(root, * response);
     request->send(response);
 });
+
+server.on("/api/v1/data", HTTP_GET, [](AsyncWebServerRequest *request) 
+{
+    // this link provides the data on the api request
+    consoleOut("answer a api request");
+    // Log heap before processing
+    //Serial.printf("[API] Free heap before processing: %u bytes\n", ESP.getFreeHeap());
+    // errorcheck
+
+    // if (!request->client()) {
+    //     request->send(500, "application/json", "{\"error\":\"client not available\"}");
+    //     return;
+    // }
+
+    AsyncResponseStream *response = request->beginResponseStream("application/json");
+    JsonDocument root; //(length current 291);
+   
+    root["smr_version"] = String(SMR);
+    root["meter_model"] = meterType;
+    root["wifi_ssid"] = "WiFi.SSID()";
+    root["wifi_strength"] = WiFi.RSSI();
+    root["total_power_import_t1_kwh"] = round3(CON_HT); // tariff 1
+    root["total_power_import_t2_kwh"] = round3(CON_LT); // tariff 2
+    root["total_power_export_t1_kwh"] = round3(RET_HT); // tariff 1
+    root["total_power_export_t2_kwh"] = round3(RET_LT); // tariff 2   
+    
+    root["active_power_w"]    = round0(POWER_CON[0]);
+    root["active_power_l1_w"] = round0(POWER_RET[0]);
+    if(threePhase)
+        {
+          root["active_power_l2_w"]  = round0(POWER_RET[1]);
+          root["active_power_l3_w"]  = round0(POWER_RET[2]);
+        }
+    
+    String jsonString;
+    serializeJson(root, * response);
+
+    // Final heap check
+    actionFlag = 130;
+    request->send(response);  
+});
+
 
 // ***************************************************************************************
 //                           Simple Firmware Update
@@ -273,5 +316,21 @@ server.begin();
 }
 
 void confirm() {
-toSend="<html><body onload=\"setTimeout(function(){window.location.href='/';}, 3000 );\"><br><br><center><h3>processing<br>your request,<br>please wait</html>";
+//if(device) snprintf(requestUrl, sizeof(requestUrl), "/DEV?welke=%d", devChoice);
+toSend  = "<html><head><script>";
+toSend += "let waitTime=" + String(3000*procesId) + ";";
+toSend += "function redirect(){";
+toSend += " let counter=document.getElementById('counter');";
+toSend += " let secs=waitTime/1000;";
+toSend += " counter.textContent=secs;";
+toSend += " let timer=setInterval(function(){";
+toSend += "   secs--; counter.textContent=secs;";
+toSend += "   if(secs<=0){ clearInterval(timer); window.location.href='" + String(requestUrl) + "'; }";
+toSend += " },1000);";
+toSend += "}";
+toSend += "</script></head>";
+toSend += "<body onload='redirect()'>";
+toSend += "<br><br><center><h3>processing<br>your request,<br>please wait<br><br>";
+toSend += "Redirecting in <span id='counter'></span> seconds...</h3></center>";
+toSend += "</body></html>";
 }

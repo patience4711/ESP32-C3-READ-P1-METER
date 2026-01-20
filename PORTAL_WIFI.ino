@@ -105,9 +105,9 @@ void start_portal() {
   char pass[40] = "";
 
 // process the data and try to connect
-  strcpy( ssid, request->getParam("s")->value().c_str() );
-  strcpy( pass, request->getParam("p")->value().c_str() );  
-  strcpy( pswd, request->getParam("pw")->value().c_str() );
+  strcpy( ssid, request->getParam("sid")->value().c_str() );
+  strcpy( pass, request->getParam("pas")->value().c_str() );  
+  strcpy( pswd, request->getParam("aww")->value().c_str() );
   securityLevel = request->arg("sl").toInt();  
 
     wifiConfigsave(); // save the admin passwd
@@ -271,7 +271,7 @@ void handleForm() {
 
 //toSend = FPSTR(PORTAL_HEAD);
 toSend = FPSTR(WIFI_PAGE);
-toSend.replace("{pw}",  String(pswd) );
+toSend.replace("{aww}",  String(pswd) );
 toSend.replace("{sl}",  String(securityLevel) );
 if (networksFound == 0) {
       toSend.replace("aplijst" ,"WiFi scan not found networks. Restart configuration portal to scan again.");

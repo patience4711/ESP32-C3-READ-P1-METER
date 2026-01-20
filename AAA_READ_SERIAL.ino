@@ -7,21 +7,41 @@
  * and send via mosquitto
  */
 
-void meterPoll() {
+void meterPoll(bool testPoll) {
+// To trigger the poll we only have to put P1_ENABLE HIGH. The meter then sends telegrams, we just pick one 
   consoleLog("polling the meter");
 
    // the rxpin on the meter should be pulled high, we do this with pin gpio5  (P1_ENABLE) 
   digitalWrite(P1_ENABLE, HIGH); 
-   if( read_into_array() ) {
+   if( read_into_array() ) 
+   {
       //we have a telegram
       ledblink(3,300);
       digitalWrite(P1_ENABLE, LOW);
+      if(testPoll) 
+      {
+      
+        if(strlen(teleGram) > 50)
+        {
+           strcat(teleGram, "\n this is a test telegram, retrieved at boot");
+           testFilesave();
+           consoleOut("saved a test telegram");
+        }else
+        {
+          strcpy(teleGram, "test failed");
+          consoleOut("test telegram failed");
+        }
+           consoleOut("saved a test telegram");
+        return;
+      }
+      
       decodeTelegram(); 
       sendMqtt(false);
       sendMqtt(true);
     } else {
     //consoleOut("no telegram received");
     consoleLog("no telegram received");
+    if(testPoll) strcpy(teleGram, "testPoll at boot failed");
     return;
     }
     // when done, write the logfile if not exists
@@ -41,11 +61,11 @@ bool read_into_array() {
     int Bytes=0;
     polled = false;
     // start waiting until serial1 available   
-    waitSerialAvailable(5);
+    waitSerial1Available(5);
     // flush the serial1 buffer so that we start reading at the beginning of the telegram    
     empty_Serial1();
     // now we wait again until something is avialable
-    if ( waitSerialAvailable(5) ) {
+    if ( waitSerial1Available(5) ) {
 
         memset(teleGram, 0, sizeof(teleGram));
         delayMicroseconds(250);
@@ -142,7 +162,7 @@ void decodeTelegram() {
             return;
         } else {
             consoleLog("crc is wrong, not processed..");
-            failCount++;
+            //failCount++;
             polled=false;
             consoleLog("not polled");
             return;
@@ -160,41 +180,50 @@ with arguments :len ( the line length excl *kWh
 : the start of the number and : the length of the number
 */    
 char what[24];
+      // the meter type in the 1st row /Ene5\XS210 ESMR 5.0
+      // find 1-3:0.2.8(50) len = 13 start = 10 count = 2
+      strcpy(what, "1-3:0.2.8(");
+      if(strstr(teleGram, what )) 
+      {
+          SMR = round0(returnFloat(what, 13, 10, 2));
+          consoleLog("SMR = " + String(SMR));
+      }
+
     // find 1-0:1.8.1(000051.775*kWh) len = 20
       strcpy(what, "1-0:1.8.1(");
       if(strstr(teleGram, what )) {
-          ECON_LT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted ECON_LT = " + String(ECON_LT, 3));
+          CON_LT = returnFloat(what, 20, 10, 10);
+          consoleLog("extracted CON_LT = " + String(CON_LT, 3));
       }  
     // find 1-0:1.8.2(000000.000*kWh) len = 20
       strcpy(what, "1-0:1.8.2(");
       if(strstr(teleGram, what )) {
-          ECON_HT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted ECON_HT = " + String(ECON_HT, 3));
+          CON_HT = returnFloat(what, 20, 10, 10);
+          consoleLog("extracted CON_HT = " + String(CON_HT, 3));
      }
     // find 1-0:2.8.1(0000524.413*kWh) len = 20
       strcpy(what, "1-0:2.8.1(");
       if(strstr(teleGram, what )) {
-          ERET_LT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted ERET_LT = " + String(ERET_LT, 3));
+          RET_LT = returnFloat(what, 20, 10, 10);
+          consoleLog("extracted RET_LT = " + String(RET_LT, 3));
     }  
     // find 1-0:2.8.2(000000.000*kWh) len = 20
       strcpy(what, "1-0:2.8.2(");
       if(strstr(teleGram, what )) {
-          ERET_HT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted ERET_HT = " + String(ERET_HT, 3));
+          RET_HT = returnFloat(what, 20, 10, 10);
+          consoleLog("extracted RET_HT = " + String(RET_HT, 3));
     }
     // find 1-0:1.7.0(00.335*kW) len=16 start 10 count 6
       strcpy(what, "1-0:1.7.0(");
       if(strstr(teleGram, what )) {
-          PACTUAL_CON = returnFloat(what, 16, 10, 6) * 1000; // watts
-          consoleLog("extracted PACTUAL_CON = " + String(PACTUAL_CON, 3));
+          POWER_CON[0] = returnFloat(what, 16, 10, 6) * 1000; // watts
+          consoleLog("extracted POWER_CON = " + String(POWER_CON[0], 3));
      } 
     // find 1-0:2.7.0(00.000*kW) len=16 start 10 count 6
       strcpy(what, "1-0:2.7.0(");
       if(strstr(teleGram, what )) {
-          PACTUAL_RET = returnFloat(what, 16, 10, 6) * 1000; //watts
-          consoleLog ("extracted PACTUAL_RET = " + String(PACTUAL_RET, 3));         
+          POWER_RET[0] = returnFloat(what, 16, 10, 6) * 1000; //watts
+          consoleLog ("extracted POWER_RET = " + String(POWER_RET[0], 3));         
       }
     // find 0-1:24.2.1(171105201000W)(00016.713*m3) len 39 start 26 count 9
       strcpy(what, "0-1:24.2.1");

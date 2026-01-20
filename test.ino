@@ -7,7 +7,7 @@ void read_test() {
     digitalWrite(P1_ENABLE, HIGH); 
     consoleLog("wait for Serial avalable");
     // start waiting until serial available   
-    waitSerialAvailable(5);
+    waitSerial1Available(5);
     // waste the serial buffer so that we start reading at the beginning of the telegram    
     consoleLog("if bytes available we empty the buffer");
     if(Serial1.available()) {
@@ -16,8 +16,8 @@ void read_test() {
     } else { consoleLog("nothing available after wait");}
 
     // now we wait again until something is available, that should be a new telegram
-    consoleLog("wait again for data on Serial");
-    if ( waitSerialAvailable(5) ) {
+    consoleLog("wait again for data on Serial1");
+    if ( waitSerial1Available(5) ) {
         memset(teleGram, 0, sizeof(teleGram));
         delayMicroseconds(250);
         if(Serial1.available() ) {

@@ -12,20 +12,20 @@ document.getElementById("help").style.display = "none";
   <span class='close' onclick='sluit()'>&times;</span>
   <b>mosquitto message format:</b><br>
   <b>f0:</b> mosquitto disabled<br><br>  
-  <b>f1:</b> {"idx":123,"nvalue":0,"svalue":"ECON_LT,ECON_HT,ERET_LT,ERET_HT,PACTUAL_CON,PACTUAL_RET);"}<br>
+  <b>f1:</b> {"idx":123,"nvalue":0,"svalue":"CON_LT,CON_HT,RET_LT,RET_HT,POWER_CON,POWER_RET);"}<br>
              {"idx":915,"nvalue":0,"svalue":"GAS;"}<br><br>
   
-  <b>f2:</b> {"econ_lt":123.22,"econ_ht":234.55,"eret_ht":123.22,"eret_lt":222.33,"gas":1234.555}<br><br>
-  <b>f3:</b> {"field1=:ECON_LT&field2=ECON_HT&field3=ERET_LT&field4=ERET_HT&field5=PACTUAL_CON&field6=PACTUAL_RET&field7=GAS&status=MQTTPUBLISH"}<br>
+  <b>f2:</b> {"con_lt":123.22,"con_ht":234.55,"ret_ht":123.22,"ret_lt":222.33,"gas":1234.555}<br><br>
+  <b>f3:</b> {"field1=:CON_LT&field2=CON_HT&field3=RET_LT&field4=RET_HT&field5=POWER_CON&field6=POWER_RET&field7=GAS&status=MQTTPUBLISH"}<br>
   <br>Format 2 has the retainflag set.
   <br><br> 
   
   <b>receive topic:</b><br>Fixed value, the topic on which is subscribed for incoming mqtt.<br><br>
   <b>mqtt_username en password</b><br>Optional, these can be left empty.<br><br>
   <b>explation</b><br>
-  ECON_LT: ECON-HT: energy consumed low/high tariff<br>
-  ERET_LT: ERET-HT: energy returned low/high tariff<br>
-  PACTUAL_CON: PACTUAL_RET: actual power consume/return<br>
+  ECON_LT: CON-HT: energy consumed low/high tariff<br>
+  ERET_LT: RET-HT: energy returned low/high tariff<br>
+  POWER_CON: POWER_RET: actual power consume/return<br>
 
   </div>
 </div>
