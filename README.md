@@ -1,6 +1,6 @@
 # ESP32-C3-READ-P1-METER
 
-The purpose of this project is to read data from a so called smart meter (model Sagecom 210 ESMR5) via its serial port. All we have to do is connect an ESP32C3 device (tested with ESP32C3 super mini) via an rj11 cable to the serial port of the meter. (I use a cable that is 15m long). The data is made available via mosquitto or an API and is also displayed on the frontpage of the webinterface.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>
+The purpose of this project is to read data from a so called smart meter (model Sagecom 210 ESMR5 or others) via its serial port. And make the data available for e.g. a battery, a solar diverter or just for administration. It is compatible with the Homewizzard p1 dongle. All we have to do is connect an ESP32C3 device (tested with ESP32C3 super mini) via an rj11 cable to the serial port of the meter. (I use a cable that is 15m long). The data is made available via mosquitto or an API and is also displayed on the frontpage of the webinterface.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>
 
 ![frontpage](https://github.com/patience4711/ESP-READ-P1-METER/assets/12282915/bb65cf1f-f6bf-4e1c-ae48-c379628f3a7a)<br>
 
@@ -9,11 +9,9 @@ I know this has been done before but not on this platform. The esp32c3 is very s
 The program has a lot of smart features. All settings can be done via the webinterface. Because the ESP has only one reliable working hardware serial port, this port is dedicated to the serial communication with the p1 meter. For the debugging we can use a web console just like in my other projects where the serial port is dedicated to the zigbee module. In the console we can call some processes and watch the output. 
 See the [WIKI](https://github.com/patience4711/ESP-READ-P1-METER/wiki) for information on building it, the working, etc. 
 
-This program runs on a nodemcu but in future there will be a version for ESP32-C3, not all ESP's can be powered by the meter.
-
 ## status and todo's
 The software has been tested on a Sagemcom T210 meter and works good.
-The next step is make it work with other meters. This is hard because i cannot test. The software is capable of reading the telegrams of other meters if they have an "open collector" port. The signal inversion is done in the software so no signal inverter is needed.
+The next step is make it work with other meters. For that purpose i added options to configure the properties of the serial connection (baud, parity stopbit) , is it a 3 phase meter and should the rx line be inverted. Now we can adapt the system to meters with deviant serial properties. Testing however is hard because i have only one meter. In general, the system is capable of reading the telegrams of various meters if they have an "open collector" port. The signal inversion is configurable in the software so no hardware signal inverter is needed.
 
 Since the esp32c3 has bluetooth capablities, i can invest how to make use of that for this project.
 
@@ -29,7 +27,7 @@ Here are some links to the projects where i got my inspiration (thanks to all fo
 
 ## downloads
 june 25 2025: There is a new version 0_1 available.<br> 
-Download [ESP32C3-P1METER-v0_2](https://github.com/patience4711/ESP32-C3-READ-P1-METER/blob/main/ESP32C3-P1METER-v0_2.ino.esp32c3.bin)<br>
+Download [ESP32C3-P1METER-v0_3](https://github.com/patience4711/ESP32-C3-READ-P1-METER/blob/main/ESP32C3_P1METER_v0_3.ino.bin)<br>
 
 ## features
 - Simply to connect to your wifi
@@ -41,7 +39,8 @@ Download [ESP32C3-P1METER-v0_2](https://github.com/patience4711/ESP32-C3-READ-P1
 - a very smart on-line console to send commands and debugging.
 - Smart timekeeping.
 - A lot of system info on the webpage.
-- the format of th data output is compatible with the home wizzard p1dongle
+- the format of the data output is compatible with the home wizzard p1dongle
+- Suitable for multiple type of meters
 
 ## the hardware
 It is nothing more than an esp32c3 device. The other materials are
@@ -57,5 +56,7 @@ The program makes rx high and reads the serial port until the "/" is found. Now 
 Next the checksum calculation is done and when the char array is approved, the interesting values can be extracted.
 
 ## changelog ##
+version ESP32-C3-P1METER-v0_3:
+  - made suitable for more metertypes
 version ESP32-C3-P1METER-v0_2:
   - cosmetical improvements
