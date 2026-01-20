@@ -61,6 +61,6 @@ Next the checksum calculation is done and when the char array is approved, the i
 
 ## changelog ##
 version ESP32-C3-P1METER-v0_3:
-  - made suitable for more metertypes
+  - made suitable for more metertypes<br>
 version ESP32-C3-P1METER-v0_2:
-  - cosmetical improvements
+  - cosmetical improvements<br>
