@@ -34,7 +34,8 @@ januari 2026: There is a version for ESP32C3 available.<br>
 Download [ESP-P1METER-v3_](https://github.com/patience4711/ESP32-C3-READ-P1-METER/blob/main/ESP32C3_P1METER_v0_3.ino.bin)<br>
 
 ## features
-- Simply to connect to your wifi
+- compatible with home-wizzard p1 dongle
+- simply to connect to your wifi
 - automatic polling or on demand via mqtt or http
 - data can be requested via http and mosquitto
 - data is displayed on the frontpage, as a monthly report.
@@ -43,21 +44,26 @@ Download [ESP-P1METER-v3_](https://github.com/patience4711/ESP32-C3-READ-P1-METE
 - a very smart on-line console to send commands and debugging.
 - Smart timekeeping.
 - A lot of system info on the webpage.
+  
 
 ## the hardware
 It is nothing more than an esp8266 device (tested with nodeMcu. The other materials are
 - a prepared cable with an 6-pins RJ-11 plug.
-- a 10K resistor to pullup the RX pin on the meter.
+- a 4K7 resistor to pullup the RX pin on the meter.
 For info on how to build and use it, please see the <a href=''>WIKI</a>
 
 ## how does it work
 The P1-meter spits out data (a so called telegram) when its rx pin is pulled high. Since we need a pullup resistor for the open collector in tx, this resistor is also connected with rx. So when we trigger the meter, this tx pin is also pulled up with 3,3 volt, this means no troubles with the 5v intolerance of an esp input.  We now receive the telegram, this has the form of a textdocument containing lines that each represent a value.
-It starts with a "/" and ends with a "!". The telegram is spit out when the meter's rx is pulled high.
+It starts with a "/" and ends with a "!". 
 
 The program makes rx high and pulls-up the tx, next reads the serial port until the "/" is found. Now the following incoming bytes are stored in a char array until the endcharacter "!" is encountered. So now we have the full telegram as a char array.
 Next the checksum calculation is done and when the char array is approved, the interesting values can be extracted.
 
 ## changelog ##
+version ESP8266-P1METER-v0_3:
+  - made compatible with home-wizzard
+  - made compatible with other meters
+  - we can edit monthly values now
 version ESP8266-P1METER-v0_2:
   - cosmetical improvements
 
