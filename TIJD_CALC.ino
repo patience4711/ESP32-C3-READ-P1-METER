@@ -86,26 +86,3 @@ static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 y -= m < 3;
 return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
 }
-
-//void tijd_convert () {
-//
-//}
-//// een universele funtie om het aantal uren en minuten uit de char in een string te zetten
-//// als wat true dan geeft ie de uren en anders de minuut
-//int tijd_cvrt(char TIJD[6], bool wat) {
-//     int uur = 0;
-//     for (int i = 0; i < 2; i++) {
-//          char c = TIJD[i];
-//               if (c < '0' || c > '9') break;
-//               uur *= 10;
-//               uur += (c - '0');
-//          }
-//     int minuut = 0;
-//     for (int i = 3; i < 5; i++) { // 2 = de :
-//          char c = TIJD[i];
-//               if (c < '0' || c > '9') break;
-//               minuut *= 10;
-//               minuut += (c - '0');
-//          }
-//if (wat) { return uur; } else { return minuut;}
-//}

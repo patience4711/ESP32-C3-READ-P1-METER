@@ -50,11 +50,9 @@ void writeStruct( String whichfile, int mnd) {
            {
              Serial.print(F("Failed open for write : ")); Serial.println(whichfile);            
            } 
-           
-              Serial.print(F("Opened for write....")); Serial.println(whichfile);
-              configFile.write( (unsigned char *)&MVALS[mnd], sizeof(MVALS[mnd]) );
-              configFile.close();
-           
+             Serial.print(F("Opened for write....")); Serial.println(whichfile);
+             configFile.write( (unsigned char *)&MVALS[mnd], sizeof(MVALS[mnd]) );
+             configFile.close();
 }
 
 bool readStruct(String whichfile ,int mnd) {
@@ -105,6 +103,7 @@ void wifiConfigsave() {
     JsonObject json = doc.to<JsonObject>();   
 //    json["ip"] = static_ip;
     json["pswd"] = pswd;
+    Serial.println("spiffs save pswd = " + String(pswd));
     json["longi"] = longi;
     json["lati"] = lati;
     json["gmtOffset"] = gmtOffset;
@@ -129,6 +128,7 @@ void basisConfigsave() {
     JsonObject json = doc.to<JsonObject>();
     json["userPwd"] = userPwd;
     json["meterType"] = meterType;
+    json["bootTest"] = bootTest;
     json["baudRate9600"] = baudRate9600;
     json["pollFreq"] = pollFreq;
     json["threePhase"] = threePhase;
@@ -205,15 +205,15 @@ bool file_open_for_read(const char* bestand)
                 Serial.println(bestand);
                 // Continue with empty doc -> all fallbacks will be used
             }
-            if (strcmp(bestand, "testFile.txt"))
+            if (strcmp(bestand, "/testFile.txt")==0)
                      {
-                        strcpy(teleGram, doc["content"] | "nothing in spiffs");
+                        strcpy(teleGram, doc["content"] | "spiffs");
                      }
             
             
             // we read the file even if it doesn't exist, so that variables are initialized
             // we read every variable with a fall back value to prevent crashes
-            if (strcmp(bestand, "/wificonfig.json")) {
+            if (strcmp(bestand, "/wificonfig.json") == 0) {
                       //if(jsonStr.indexOf("ip") > 0){ strcpy(static_ip, doc["ip"]);}
                       strcpy(pswd, doc["pswd"] | "0000");
                       longi = doc["longi"] |  5.734;
@@ -224,10 +224,11 @@ bool file_open_for_read(const char* bestand)
                       //Serial.println("spiffs securityLevel = " + String(securityLevel));
             }
 
-            if (strcmp(bestand, "/basisconfig.json")) {
+            if (strcmp(bestand, "/basisconfig.json") == 0) {
                      strcpy (userPwd, doc["userPwd"] | "1111");
                      //if(jsonStr.indexOf("dom_Address")   >  0 ) { strcpy(dom_Address,   doc["dom_Address"])         ;}
                      //if(jsonStr.indexOf("dom_Port") >  0 ) { dom_Port = doc["dom_Port"].as<int>() ;} 
+                     bootTest = doc["bootTest"].as<bool>() | false;
                      threePhase = doc["threePhase"].as<bool>() | false;
                      baudRate9600 = doc["baudRate9600"].as<bool>() | false;
                      rxInvert = doc["rxInvert"].as<bool>() | true;
@@ -236,7 +237,7 @@ bool file_open_for_read(const char* bestand)
                      diagNose = doc["diagNose"].as<bool>() | true;
               }            
 
-            if (strcmp(bestand, "/mqttconfig.json")) {
+            if (strcmp(bestand, "/mqttconfig.json") == 0) {
                     strcpy(Mqtt_Broker,   doc["Mqtt_Broker"]   | "192.168.0.100");
                     strcpy(Mqtt_Port,     doc["Mqtt_Port"]     | "1883");  
                     strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"] | "domoticz/in"); 

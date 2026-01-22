@@ -194,11 +194,14 @@ server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
     root["RET_HT"] = round3(RET_HT);// else root["eNrht"] = "n/a";
     root["RET_LT"] = round3(RET_LT);// else root["eNrlt"] = "n/a";
 
-    root["POWER_CON"] = round0(POWER_CON[0]); //else root["pac"] = "n/a";
-    root["POWER_RET"] = round0(POWER_RET[0]); //else root["par"] = "n/a";
-
-    root["enR"] = round3(enReturn); //else root["enR"] = "n/a";
-    root["enC"] = round3(enCons); //else root["enC"] = "n/a";
+    root["PWRC1"] = round0(POWER_CON[0]); //else root["pac"] = "n/a";
+    root["PWRR1"] = round0(POWER_RET[0]); //else root["par"] = "n/a";
+    //root["PWRC2"] = round0(POWER_CON[1]); //else root["pac"] = "n/a";
+    //root["PWRR2"] = round0(POWER_RET[1]); //else root["par"] = "n/a";
+    //root["PWRC3"] = round0(POWER_CON[2]); //else root["pac"] = "n/a";
+    //root["PWRR3"] = round0(POWER_RET[2]); //else root["par"] = "n/a";
+    //root["enR"] = round3(enReturn); //else root["enR"] = "n/a";
+   // root["enC"] = round3(enCons); //else root["enC"] = "n/a";
     root["aPo"] = round0(Power); //else root["aPo"] = "n/a";
     root["gAs"] = round3(mGAS); //else root["gAs"] = "n/a";
     root["threePhase"] = threePhase; 

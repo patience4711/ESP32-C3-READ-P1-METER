@@ -34,11 +34,21 @@ consoleOut("performing loopback test on uart0");
 
 // function to show debug info
 void consoleOut(String toLog) {
-// decide to log to serial or the console 
-  if(diagNose) 
-  {
-    Serial.println(toLog);
-  } 
+
+ switch (diagNose) 
+    { case 0:  
+          break;
+      case 1:       
+          delay(100); // otherwise the socket cannot keep up
+          ws.textAll(toLog);
+          break;
+      case 2: 
+          Serial.println(toLog);
+          break;
+      // case 3:
+      //      toLog += "\n";
+      //     debugLog += toLog;   
+    }
 }
 
 // flash the led
@@ -60,14 +70,6 @@ String getChipId(bool sec) {
   if(sec) return String(chipId); else return "ESP32C3-" + String(chipId);
 }
 
-//int FindCharInArray(char array[], char c, int len) {
-//  for (int i = len - 1; i >= 0; i--) {
-//    if (array[i] == c) {
-//      return i;
-//    }
-//  }
-//  return -1;
-//}
 
 long getValidVal(long valNew, long valOld, long maxDiffer)
 {
@@ -156,18 +158,18 @@ void showDir() {
  }
 
  void printFiles() {  
-      consoleLog(" print existing files ******");
+       consoleOut(" print existing files ******");
       for (int x=1; x < 13; x++) 
       {
           String bestand = "/monthly_vals" + String(x) + ".str";
           printStruct(bestand, x);
       }
-        Serial.println("the current values are:");
-        Serial.println("CON_LT = " + String(CON_LT));     
-        Serial.println("CON_HT = " + String(CON_HT));
-        Serial.println("RET_LT = " + String(RET_LT));
-        Serial.println("RET_HT = " + String(RET_HT));
-        Serial.println("mGAS = " + String(mGAS));     
+        consoleOut("the current values are:");
+        consoleOut("CON_LT = " + String(CON_LT));     
+        consoleOut("CON_HT = " + String(CON_HT));
+        consoleOut("RET_LT = " + String(RET_LT));
+        consoleOut("RET_HT = " + String(RET_HT));
+        consoleOut("mGAS = " + String(mGAS));     
 }
 
 void writeMonth(int maand) {

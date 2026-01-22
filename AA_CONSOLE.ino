@@ -134,7 +134,7 @@ function disConnect() {
 
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  diagNose = true;
+  diagNose = 1;
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
 
   for(int i=0; i<len; i++ ) 
@@ -158,9 +158,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
           } else 
 
           // see files
-           if (strcasecmp(txBuffer,"PRINTOUT-SPIFFS") == 0) {  
+           if (strncasecmp(txBuffer,"PRINTOUT-SPIFFS=" , 16) == 0) {  
               //we do this in the loop
-              actionFlag = 46;
+               char *valueStr = txBuffer + 16;
+
+              int month = atoi(valueStr);
+              String bestand = "//mvalues_" + String(month) + ".str"; // month5.str
+              printStruct( bestand, month ); 
               return;             
           
           } else 

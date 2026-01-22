@@ -11,6 +11,7 @@ void handleForms(AsyncWebServerRequest *request) {
          pollFreq   =           request->arg("pfreq").toInt(); //values are 0 30 60 300
          //if(request->hasParam("pL")) Polling = true; else Polling = false;
          if(request->hasParam("debug")) diagNose = true;  else diagNose = false;
+         if(request->hasParam("tst")) bootTest = true;  else bootTest = false;
          if(request->hasParam("3ph")) threePhase = true;  else threePhase = false;
          if(request->hasParam("baud")) baudRate9600 = true;  else baudRate9600 = false;
          if(request->hasParam("rxI")) rxInvert = true;  else rxInvert = false;

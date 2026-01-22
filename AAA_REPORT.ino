@@ -29,31 +29,31 @@ String putReport(const String& var)
         eret_ht = 0;
         mgas = 0;       
 //        
-        next = x+1;
+        next = x + 1;
         if(next == 13) next = 0; // the last iteration is thus 0 - 11   
 //        prev = x-1;
 //        if(prev == 0) prev = 12; 
-         Serial.println("x = " + String(x));
+         consoleOut("x = " + String(x));
         //if there are no values we skip this whole iteration
         if ( MVALS[x].EC_LT != 0 || MVALS[x].EC_HT != 0 || MVALS[x].ER_LT != 0 || MVALS[x].ER_HT != 0 || MVALS[x].mGAS != 0 )
         { 
-            Serial.println("found values in month " + String(x));
+             consoleOut("found values in month " + String(x));
             // we are in the month 8 and have values
             //check if there are values in the next month and they are greater
             // if we have greater values of the next month, we could calculate
             if( MVALS[next].EC_LT != 0 &&  MVALS[next].EC_LT > MVALS[x].EC_LT ) { 
-            Serial.println("also values in next month " + String(next));
+             consoleOut("also values in next month " + String(next));
                    econ_lt = MVALS[next].EC_LT - MVALS[x].EC_LT;
                    // this would be over the current month
             } else {
             // we have values in x but not (greater) values in next
             // we can check if the current values are greater than the ones in the file
             // we can calculate a todate value that would be over the current mont 
-            Serial.println("no values in next month so calculate todate"); 
+             consoleOut("no values in next month so calculate todate"); 
                if (CON_LT > MVALS[x].EC_LT ) {
                  econ_lt = CON_LT - MVALS[x].EC_LT; //
                } else { 
-                Serial.println("could not calculate todate for " + String(x));}
+                 consoleOut("could not calculate todate for " + String(x));}
             }  
           
             if( MVALS[next].EC_HT != 0 &&  MVALS[next].EC_HT > MVALS[x].EC_HT ) { 
@@ -81,7 +81,7 @@ String putReport(const String& var)
                if (mGAS > MVALS[x].mGAS ) mgas = mGAS - MVALS[x].mGAS; //
             }             
           
-       } else { Serial.println("skipped line " + String(x));}    
+       } else { consoleOut("skipped line " + String(x));}    
         // for each month we print a line
         // we want the current month alwas be the last one
         sprintf(temp, "<tr id=\"row%.d\"><td>%.d<td>%.2f<td>%.2f<td>%.2f<td>%.2f<td>%.2f</td></tr>", x, x, econ_lt, econ_ht, eret_lt, eret_ht, mgas);  
@@ -92,7 +92,7 @@ String putReport(const String& var)
         }    
         strcat(report1, report2); 
         //consoleLog(String(report));
-        consoleLog("length = " + String(strlen(report2)));
+        consoleOut("length = " + String(strlen(report2)));
         //swap_to_hw();
         return report1;
         }
@@ -103,15 +103,15 @@ return String();
 
 
 
-void printStruct( String bestand, int what ) {
+void printStruct( String bestand, int what) {
 //input String bestand = "/Inv_Prop" + String(x) + ".str";
       //String bestand = bestand + String(i) + ".str"
       //readStruct(bestand); is done at boottime
-        Serial.println("content of MVALS[" + String(what) + "]");
-        Serial.println("EC_LT = " + String(MVALS[what].EC_LT));     
-        Serial.println("EC_HT = " + String(MVALS[what].EC_HT));
-        Serial.println("ER_LT = " + String(MVALS[what].ER_LT));
-        Serial.println("ER_HT = " + String(MVALS[what].ER_HT));
-        Serial.println("mGAS = " + String(MVALS[what].mGAS));
+        consoleOut("content of MVALS[" + String(what) + "]");
+        consoleOut("EC_LT = " + String(MVALS[what].EC_LT));     
+        consoleOut("EC_HT = " + String(MVALS[what].EC_HT));
+        consoleOut("ER_LT = " + String(MVALS[what].ER_LT));
+        consoleOut("ER_HT = " + String(MVALS[what].ER_HT));
+        consoleOut("mGAS = " + String(MVALS[what].mGAS));
 
 }

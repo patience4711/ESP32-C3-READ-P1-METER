@@ -149,6 +149,8 @@ tr {height:35px;}
           <tr><td>energy usage</td><td id="p01"></td><td>kWh</td><td><div class='popup'><button class='btn' id='btn1'>details</button><span class='popuptext' id='myPopup'></span><div></tr>
           <tr><td>energy return</td><td id="p11"></td><td>kWh</td><td><button class='btn' id='btn2'>details</button></tr>
           <tr><td>power l1</td><td id="p21"></td><td>W</td><td><button class='btn' id='btn3'>details</button></tr>
+          <tr><td>power l2</td><td id="p22"></td><td>W</td><td><button class='btn' id='btn4'>details</button></tr>
+          <tr><td>power l3</td><td id="p23"></td><td>W</td><td><button class='btn' id='btn5'>details</button></tr>
           <tr><td>gas consumed</td><td id="p31"></td><td>m3</td><td id="p30"></tr>
         </table>
         </div>  
@@ -244,8 +246,8 @@ function getData() {
       CON_LT = obj.CON_LT;
       RET_HT = obj.RET_HT;
       RET_LT = obj.RET_LT;
-      POWER_CON = obj.POWER_CON; 
-      POWER_RET = obj.POWER_RET;    
+      PWRC1 =  obj.PWRC1; 
+      PWRR1 =  obj.PWRR1;    
       var enC = obj.enC;
       var enR = obj.enR;
       var aPo = obj.aPo;

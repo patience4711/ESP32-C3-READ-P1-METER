@@ -150,10 +150,11 @@ DNSServer dnsServer;
   
 #define LED_AAN    LOW   //sinc
 #define LED_UIT    HIGH
-#define knop              0  //
-#define led_onb           8  // onboard led was 2
-#define P1_ENABLE         5 // gpio5 if high the RX of the meter is pulled high
-
+#define knop          0  //
+#define led_onb       8  // onboard led was 2
+#define P1_ENABLE     5  // gpio5 if high the RX of the meter is pulled high
+#define RXP1          3
+#define TXP1          2  // not used
 String toSend = "";
  
 int value = 0; 
@@ -189,10 +190,11 @@ m_values MVALS[13];
 
 //unsigned int currentCRC = 0; //needs to be global?
 
-bool diagNose = true;
+uint8_t diagNose = 0;
 int actionFlag = 0;
 char txBuffer[50];
-bool USB_serial = true;
+//bool USB_serial = true;
+bool bootTest;
 uint8_t meterType = 0;
 bool baudRate9600;
 bool rxInvert;
@@ -235,8 +237,7 @@ uint8_t procesId = 1;
 //HardwareSerial p1Serial(1); // doesn't work
 //#define RXP1 9
 //#define TXP1 10
-#define RXP1 20
-#define TXP1 21
+
 //#define GPS_BAUD 115200
 
 void setup() {
@@ -279,11 +280,12 @@ void setup() {
   ledblink(3,30); 
  
   // poll the meter at once so that we have a debugfile when there is no wifi
-//  if( !SPIFFS.exists("/logChar.txt") && !SPIFFS.exists("/testFile.txt") ) {
-//      Serial.println("performing a test meterpoll");
-//      meterPoll(); // poll the meter and when we don't have testfiles, write them
-//   }
-
+  // dont bother to start wifi first
+  if(bootTest) 4
+  {
+    pollFreq = 0; // disable autopoll
+    meterPoll(); //we do the first poll to test
+  }
   start_wifi(); // start wifi and server
 
   getTijd(); // retrieve time from the timeserver
@@ -328,7 +330,7 @@ void setup() {
   eventSend(0);
   if ( !timeRetrieved )   getTijd();
 
-  if(diagNose) meterPoll(true); //we do the first poll to test
+ 
 } // end setup()
 
 //****************************************************************************
@@ -355,23 +357,11 @@ if(pollFreq != 0)
         laatsteMeting += 1000UL * pollFreq ; // 
         // the p1 meter only transmits when the rx line = high
         digitalWrite(P1_ENABLE, HIGH);
-        meterPoll(false); 
+        meterPoll(); 
         digitalWrite(P1_ENABLE, LOW);
    }
 }
-//// ******************************************************************
-////     healthcheck every 10 minutes but 2 minutes later than poll 
-//// ******************************************************************
-////   nu = millis() + 1000UL * 120 ; // 120 sec = 12 minutes later
-//   if (nu - lastCheck >= 1000UL * 600) // was 600
-//   {
-//         //ws.textAll("600 secs passed" + String(millis()) );
-//         lastCheck += 1000UL * 600;
-//         healthCheck(); // checks zb radio, mqtt and time, when false only message if error
-//   }
 
-  // when there is a new date the time is retrieved
-  // if retrieve fails, day will not be datum, so we keep trying
   if (day() != datum) // if date overflew 
   { 
        if(day() < datum) {
@@ -382,7 +372,7 @@ if(pollFreq != 0)
         datum = day();
        }
      
-       getTijd(); // retrieve time and recalculate the switch times
+       getTijd(); // retrieve time 
   }
   
   // we do this before sending polling info and healthcheck

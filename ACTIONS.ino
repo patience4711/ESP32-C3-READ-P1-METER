@@ -31,17 +31,17 @@
       actionFlag = 0; //reset the actionflag
       empty_serial();
       unsigned long nu = millis();
-      consoleLog("nu before = " + String(nu) );
+      consoleOut("nu before = " + String(nu) );
       waitSerial1Available(5); // recalculate time after change of settings
       nu = millis();
-      consoleLog("nu after = " + String(nu) );
-      if(Serial.available()) consoleLog("there is data available");
+      consoleOut("nu after = " + String(nu) );
+      if(Serial.available())  consoleOut("there is data available");
     }    
     
 
     if (actionFlag == 26) { //polling
       actionFlag = 0; //reset the actionflag
-      meterPoll(false); // read and decode the telegram
+      meterPoll(); // read and decode the telegram
       sendMqtt(false);
       sendMqtt(true); //gas
     }    
@@ -55,7 +55,7 @@
     if (actionFlag == 28) { //
       actionFlag = 0; //reset the actionflag
       if(!testTelegram) {
-        consoleLog("telegram is modified, reboot if you want to test");
+        consoleOut("telegram is modified, reboot if you want to test");
         return;
       }
       // if we have te telegram read from spiffs we can decode it
@@ -63,7 +63,7 @@
       //we need the readCRC so we extract it from the file
          int len = strlen(teleGram);
          strncpy(readCRC, teleGram + len-4, 4); 
-         consoleLog("readCRC = " + String(readCRC) );
+         consoleOut("readCRC = " + String(readCRC) );
          decodeTelegram();
          sendMqtt(false);
          sendMqtt(true);

@@ -7,9 +7,9 @@
  * and send via mosquitto
  */
 
-void meterPoll(bool testPoll) {
+void meterPoll() {
 // To trigger the poll we only have to put P1_ENABLE HIGH. The meter then sends telegrams, we just pick one 
-  consoleLog("polling the meter");
+   consoleOut("polling the meter");
 
    // the rxpin on the meter should be pulled high, we do this with pin gpio5  (P1_ENABLE) 
   digitalWrite(P1_ENABLE, HIGH); 
@@ -18,39 +18,35 @@ void meterPoll(bool testPoll) {
       //we have a telegram
       ledblink(3,300);
       digitalWrite(P1_ENABLE, LOW);
-      if(testPoll) 
+      if(bootTest) 
       {
-      
+        // if we are testing we only want to know whether ther is a legegram received
+        // so we do not decode it but return  
         if(strlen(teleGram) > 50)
         {
            strcat(teleGram, "\n this is a test telegram, retrieved at boot");
            testFilesave();
            consoleOut("saved a test telegram");
-        }else
-        {
-          strcpy(teleGram, "test failed");
-          consoleOut("test telegram failed");
+        } else {
+           strcpy(teleGram, "test at boot failed");
+           consoleOut("test telegram failed");
         }
-           consoleOut("saved a test telegram");
+
+        consoleOut("performed the bootTest");
         return;
       }
-      
+      // when we are not testing we decode the telegram
       decodeTelegram(); 
       sendMqtt(false);
       sendMqtt(true);
     } else {
-    //consoleOut("no telegram received");
-    consoleLog("no telegram received");
-    if(testPoll) strcpy(teleGram, "testPoll at boot failed");
-    return;
+    //when we are here nothing was received
+     consoleOut("no telegram received");
+    //if(testPoll) strcpy(teleGram, "testPoll at boot failed");
+    //return;
     }
-    // when done, write the logfile if not exists
 
-//    // if the testFile still not exists we write it now
-//    if( !SPIFFS.exists("/testFile.txt") ) {
-//         testFilesave(); // an existing logfile is not overwritten
-//    }
-   consoleLog("meterPoll done");
+    consoleOut("meterPoll done");
    digitalWrite(P1_ENABLE, LOW);
 }
 
@@ -82,7 +78,7 @@ bool read_into_array() {
 //              }
               byteCounter ++;
               if (inByte[0] == '/') { 
-                    consoleLog("\nfound start at " + String(byteCounter));
+                     consoleOut("\nfound start at " + String(byteCounter));
                     
                     // add this byte to teleGram 
                     strncat(teleGram, inByte, 1); 
@@ -93,7 +89,7 @@ bool read_into_array() {
                        strncat( teleGram, inByte, 1);
                        // catch the endsign
                        if (inByte[0] == '!' ) {
-                           consoleLog("found the end sign");
+                            consoleOut("found the end sign");
 
                            // we need to read 4 more bytes (the crc) until the \n and then stop
                            Serial1.readBytes(readCRC, 4);
@@ -103,24 +99,24 @@ bool read_into_array() {
                         }   
                      }
                // if we are here, we have read 650 characters but no endsign found
-               consoleLog("no endsign found");
+                consoleOut("no endsign found");
                return false;              
            }
 
        // we terminate if more than 2000 bytes read
        if ( byteCounter > 2000 ) {
-            consoleLog("byteCounter over 2000");
+             consoleOut("byteCounter over 2000");
             return false;       
            }
         }
    // if we are here, no startssign was found    
-      consoleLog("no startsign found");
+       consoleOut("no startsign found");
       return false;
    }
 
   
   // if we are here, no serial data was available
-  consoleLog("got no data from serial1");
+   consoleOut("got no data from serial1");
   return false;
 }   
 
@@ -137,7 +133,7 @@ void decodeTelegram() {
 //            testFilesave(); // an existing file is not overwritten
 //        }
          int lengte = strlen(teleGram);
-         consoleLog("teleGram length = " + String(lengte));
+          consoleOut("teleGram length = " + String(lengte));
          
          // the crc = calculated over the telegram inc start and endsign, so without crc
          // the teleGram contains the CRC so we terminate teleGram after the !
@@ -146,25 +142,25 @@ void decodeTelegram() {
          //testTelegram = false;
          int calculatedCRC = CRC16(0x0000, (unsigned char *) teleGram, lengte-4); 
          
-         consoleLog("the calculated crc = " + String(calculatedCRC));
+          consoleOut("the calculated crc = " + String(calculatedCRC));
       
-         consoleLog("strol of readCRC = " + String(strtol(readCRC, NULL, 16))); //8F46
+          consoleOut("strol of readCRC = " + String(strtol(readCRC, NULL, 16))); //8F46
     
         if(strtol(readCRC, NULL, 16) == calculatedCRC) //do the crc's match
         {
-            consoleLog("crc is correct, now extract values..");
+             consoleOut("crc is correct, now extract values..");
             extractTelegram();   
             polled = true;
             eventSend(2); // inform the webbpage that there is new data
-            consoleLog("polled true");
+            consoleOut("polled true");
             // set the timestamp
             sprintf( timeStamp, "%02d/%02d %02d:%02d", day(), month(), hour(), minute() );
             return;
         } else {
-            consoleLog("crc is wrong, not processed..");
+             consoleOut("crc is wrong, not processed..");
             //failCount++;
             polled=false;
-            consoleLog("not polled");
+             consoleOut("not polled");
             return;
         }
     }
@@ -186,50 +182,52 @@ char what[24];
       if(strstr(teleGram, what )) 
       {
           SMR = round0(returnFloat(what, 13, 10, 2));
-          consoleLog("SMR = " + String(SMR));
+           consoleOut("SMR = " + String(SMR));
       }
 
     // find 1-0:1.8.1(000051.775*kWh) len = 20
       strcpy(what, "1-0:1.8.1(");
       if(strstr(teleGram, what )) {
           CON_LT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted CON_LT = " + String(CON_LT, 3));
+           consoleOut("extracted CON_LT = " + String(CON_LT, 3));
       }  
     // find 1-0:1.8.2(000000.000*kWh) len = 20
       strcpy(what, "1-0:1.8.2(");
       if(strstr(teleGram, what )) {
           CON_HT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted CON_HT = " + String(CON_HT, 3));
+           consoleOut("extracted CON_HT = " + String(CON_HT, 3));
      }
     // find 1-0:2.8.1(0000524.413*kWh) len = 20
       strcpy(what, "1-0:2.8.1(");
       if(strstr(teleGram, what )) {
           RET_LT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted RET_LT = " + String(RET_LT, 3));
+           consoleOut("extracted RET_LT = " + String(RET_LT, 3));
     }  
     // find 1-0:2.8.2(000000.000*kWh) len = 20
       strcpy(what, "1-0:2.8.2(");
       if(strstr(teleGram, what )) {
           RET_HT = returnFloat(what, 20, 10, 10);
-          consoleLog("extracted RET_HT = " + String(RET_HT, 3));
+           consoleOut("extracted RET_HT = " + String(RET_HT, 3));
     }
     // find 1-0:1.7.0(00.335*kW) len=16 start 10 count 6
       strcpy(what, "1-0:1.7.0(");
       if(strstr(teleGram, what )) {
           POWER_CON[0] = returnFloat(what, 16, 10, 6) * 1000; // watts
-          consoleLog("extracted POWER_CON = " + String(POWER_CON[0], 3));
+           consoleOut("extracted POWER_CON = " + String(POWER_CON[0], 3));
      } 
     // find 1-0:2.7.0(00.000*kW) len=16 start 10 count 6
       strcpy(what, "1-0:2.7.0(");
       if(strstr(teleGram, what )) {
           POWER_RET[0] = returnFloat(what, 16, 10, 6) * 1000; //watts
-          consoleLog ("extracted POWER_RET = " + String(POWER_RET[0], 3));         
+           consoleOut ("extracted POWER_RET = " + String(POWER_RET[0], 3));         
       }
+       
+    
     // find 0-1:24.2.1(171105201000W)(00016.713*m3) len 39 start 26 count 9
       strcpy(what, "0-1:24.2.1");
       if(strstr(teleGram, what )) {
           mGAS = returnFloat(what, 39, 26, 9);
-          consoleLog ("extracted mGAS = " + String(mGAS, 3));        
+           consoleOut ("extracted mGAS = " + String(mGAS, 3));        
       }
 }
 
@@ -247,12 +245,4 @@ float returnFloat(char what[24], uint8_t len, uint8_t bgn, uint8_t count) {
    return atof(number);
 }
 
-void consoleLog(String toLog) {
-  if(diagNose)
-  {
-    ws.textAll(toLog);
-    delay(100);
-  } else {
-  Serial.println(toLog);
-  }
-}
+

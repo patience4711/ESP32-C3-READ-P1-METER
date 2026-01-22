@@ -26,10 +26,10 @@ const char BASISCONFIG[] PROGMEM = R"=====(
   <tr><td class="cap">meter type<td><select name='mtype' class='sb1' id='sel' >
     <option value='0' mtype_0>NO METER</option>
     <option value='1' mtype_1>SAGEMCOM XS210_D ESMR5</option>
-    <option value='2' mtype_2>LANDIS GYR E350 ZMF100</option></select>
-    </tr>  
+    <option value='2' mtype_2>LANDIS GYR E350 ZMF100</option></select></tr>  
     <tr><td>baud 9600<td><input type='checkbox' style='width:30px; height:30px;' name='baud' #sjik ></input></td></tr>
-    <tr><td>rxInvert:<td><input type='checkbox' style='width:30px; height:30px;' name='rxI' #check></input></td><tr>
+    <tr><td>test<td><input type='checkbox' style='width:30px; height:30px;' name='tst' #sjuk></input></td></tr>
+    <tr><td>rxInvert:<td><input type='checkbox' style='width:30px; height:30px;' name='rxI' #check></input></td></tr>
     <tr><td>3phase meter:<td><input type='checkbox' style='width:30px; height:30px;' name='3ph' #sjak ></input></td></tr>
     <tr><td class="cap">polling frequency<td><select name='pfreq' class='sb1' id='sel2' >
     <option value='0' pfreq_0>no polling</option>
@@ -59,6 +59,7 @@ void zendPageBasis(AsyncWebServerRequest *request)
     webPage.replace( "'{pw1}'" , "'" + String(userPwd) + "'") ;
     if (baudRate9600)  webPage.replace("#sjik", "checked");
     if (threePhase)    webPage.replace("#sjak", "checked");
+    if (bootTest)    webPage.replace("#sjuk", "checked");
     if (rxInvert)      webPage.replace("#check", "checked");
     // terugzetten select
     //if(USB_serial) Serial.println("meterType= "+ String(meterType));

@@ -24,3 +24,5 @@
  remove the inverson on the pin didn't help
  Use the native serial port Serial like the nodemcu
  */
+// api 2 hase meter {"wifi_ssid":"Ziggo8831772","wifi_strength":68,"smr_version":50,"meter_model":"Sagemcom T210-D ESMR 5.0","unique_id":"4530303438303030303438363838353230","active_tariff":2,"total_power_import_kwh":16105.680,"total_power_import_t1_kwh":10118.923,"total_power_import_t2_kwh":5986.757,"total_power_export_kwh":12115.683,"total_power_export_t1_kwh":3792.337,"total_power_export_t2_kwh":8323.346,"active_power_w":-344.000,"active_power_l1_w":-524.000,"
+

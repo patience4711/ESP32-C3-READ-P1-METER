@@ -32,7 +32,7 @@ bool getTijd() {
     datum = day();
 
    delay(10);
-   sun_setrise(); //to calulate moonshape sunrise etc. and the switchtimes
+   //sun_setrise(); //to calulate moonshape sunrise etc. and the switchtimes
 
    return true;
 }

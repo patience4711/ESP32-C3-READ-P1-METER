@@ -74,20 +74,20 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
     if( !doc["poll"].isNull() )
     {
         //int inv = doc["poll"].as<int>(); 
-        consoleLog( "got message containing \"poll\"");
+         consoleOut( "got message containing \"poll\"");
 
         if(pollFreq == 0)
         {
              actionFlag = 26; // takes care for the polling
               return;
             } else {
-               consoleLog("forbidden, automatic polling is on");
+                consoleOut("forbidden, automatic polling is on");
               return;         
             }
         }
         else
         {
-          consoleLog("polling = automatic, skipping");
+           consoleOut("polling = automatic, skipping");
         }
 }
 

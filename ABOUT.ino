@@ -36,7 +36,7 @@ void handleAbout(AsyncWebServerRequest *request) {
   int dagen = urens/24;
  
   strcat(page, "<br><table><tr><TH colspan='2'>ESP SYSTEM INFORMATION</th></tr>" );
-  strcat(page, "<tr><td>firmware version<td>ESP32C3-P1METER-v0_2c</tr>");
+  strcat(page, "<tr><td>firmware version<td>ESP32C3-P1METER-v0_3</tr>");
   if ( timeRetrieved ) strcat(page,"<tr><td>time retrieved<td>yes</tr>"); else strcat(page,"<tr><td>time retrieved<td>no</tr>");
   sprintf(temp, "<tr><td>systemtime<td> %d:%d " , hour(), minute());
   switch (dst) {
