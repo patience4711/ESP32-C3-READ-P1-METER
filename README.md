@@ -8,7 +8,7 @@ Just like the Home-Wizzard p1 meter dongle, the purpose of this project is to re
 
 I know this has been done before but not on this platform. Moreover this project has more features. The esp32c3 can be fed with the 5v of the meter. 
 
-The program has a lot of smart features. All settings can be done via the webinterface. Because the ESP has only one reliable working hardware serial port, this port is dedicated to the serial communication with the p1 meter. For the debugging we can use a web console just like in my other projects where the serial port is dedicated to the zigbee module. In the console we can call some processes and watch the output. 
+The program has a lot of smart features. All settings can be done via the webinterface. Because the ESPC3 has an extra serial port, we have the oportunity to debug via the usb. And we have the web console where we can observe serveral processes and can issue administrational commands. 
 See the [WIKI](https://github.com/patience4711/ESP-READ-P1-METER/wiki/GENERAL) for information on building it, the working, etc. 
 
 ## status and todo's
@@ -46,10 +46,10 @@ Download [ESP-P1METER-v3_](https://github.com/patience4711/ESP32-C3-READ-P1-METE
   
 
 ## the hardware
-It is nothing more than an esp8266 device (tested with nodeMcu. The other materials are
+It is nothing more than an esp32c3 device. The other materials are
 - a prepared cable with an 6-pins RJ-11 plug.
 - a 4K7 resistor to pullup the RX pin on the meter.
-For info on how to build and use it, please see the <a href=''>WIKI</a>
+For info on how to build and use it, please [visit the wiki](https://github.com/patience4711/ESP32-C3-READ-P1-METER/wiki)
 
 ## how does it work
 The P1-meter spits out data (a so called telegram) when its rx pin is pulled high. Since we need a pullup resistor for the open collector in tx, this resistor is also connected with rx. So when we trigger the meter, this tx pin is also pulled up with 3,3 volt, this means no troubles with the 5v intolerance of an esp input.  We now receive the telegram, this has the form of a textdocument containing lines that each represent a value.
@@ -59,11 +59,11 @@ The program makes rx high and pulls-up the tx, next reads the serial port until 
 Next the checksum calculation is done and when the char array is approved, the interesting values can be extracted.
 
 ## changelog ##
-version ESP8266-P1METER-v0_3:
+version ESP32C3-P1METER-v0_3:
   - made compatible with home-wizzard
   - made compatible with other meters
   - we can edit monthly values now
-version ESP8266-P1METER-v0_2:
+version ESP32C3-P1METER-v0_2:
   - cosmetical improvements
 
  
