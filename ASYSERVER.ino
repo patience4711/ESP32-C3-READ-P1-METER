@@ -237,12 +237,13 @@ server.on("/api/v1/data", HTTP_GET, [](AsyncWebServerRequest *request)
     float pwr_l3 = meter.pwr_con[2] - meter.pwr_ret[2];
     float pwr_tot = pwr_l1 + pwr_l2 + pwr_l3; 
     
-    root["active_power_w"]    = round0(pwr_tot); // balance of ret and con
-    root["active_power_l1_w"] = round0(meter.pwr_ret[0]); // balance of ret & con
+    // in a 1 phase meter active_power_w is equal to active_power_l1_w
+    root["active_power_w"]    = round0(pwr_tot); // balance of ret and con of all 3 phases
+    root["active_power_l1_w"] = round0(pwr_l1);  // balance of ret & con
     if(threePhase)
         {
-          root["active_power_l2_w"]  = round0(pwr_l2);
-          root["active_power_l3_w"]  = round0(pwr_l3);
+          root["active_power_l2_w"]  = round0(pwr_l2); // balance of ret & con
+          root["active_power_l3_w"]  = round0(pwr_l3); // balance of ret & con
         }
     
     String jsonString;
