@@ -107,7 +107,7 @@ void wifiConfigsave() {
     json["longi"] = longi;
     json["lati"] = lati;
     json["gmtOffset"] = gmtOffset;
-    json["zomerTijd"] = zomerTijd;
+    json["DTS"] = DTS;
     Serial.println("spiffs save securityLevel = " + String(securityLevel));
     json["securityLevel"] = securityLevel;
     File configFile = SPIFFS.open("/wificonfig.json", "w");
@@ -159,7 +159,7 @@ void mqttConfigsave() {
     json["Mqtt_inTopic"] = Mqtt_inTopic;
     json["Mqtt_Username"] = Mqtt_Username;
     json["Mqtt_Password"] = Mqtt_Password;
-    json["Mqtt_Clientid"] = Mqtt_Clientid;    
+    //json["Mqtt_Clientid"] = Mqtt_Clientid;    
     json["Mqtt_Format"] = Mqtt_Format;    
     File configFile = SPIFFS.open("/mqttconfig.json", "w");
     if (!configFile) {
@@ -219,22 +219,22 @@ bool file_open_for_read(const char* bestand)
                       longi = doc["longi"] |  5.734;
                       lati = doc["lati"]  |   51.432;                     
                       strcpy(gmtOffset, doc["gmtOffset"] | "+120");
-                      zomerTijd = doc["zomerTijd"].as<bool>() | true;
-                      securityLevel = doc["securityLevel"].as<int>() | 6;
-                      //Serial.println("spiffs securityLevel = " + String(securityLevel));
+                      DTS = doc["DTS"] | true;
+                      securityLevel = doc["securityLevel"] | 6;
+                      //Serial.println("spiffs DTS = " + String(DTS));
             }
 
             if (strcmp(bestand, "/basisconfig.json") == 0) {
                      strcpy (userPwd, doc["userPwd"] | "1111");
                      //if(jsonStr.indexOf("dom_Address")   >  0 ) { strcpy(dom_Address,   doc["dom_Address"])         ;}
                      //if(jsonStr.indexOf("dom_Port") >  0 ) { dom_Port = doc["dom_Port"].as<int>() ;} 
-                     bootTest = doc["bootTest"].as<bool>() | false;
-                     threePhase = doc["threePhase"].as<bool>() | false;
-                     baudRate9600 = doc["baudRate9600"].as<bool>() | false;
-                     rxInvert = doc["rxInvert"].as<bool>() | true;
-                     meterType = doc["meterType"].as<int>() | 1;
-                     pollFreq = doc["pollFreq"].as<int>() | 0;
-                     diagNose = doc["diagNose"].as<bool>() | true;
+                     bootTest = doc["bootTest"] | false;
+                     threePhase = doc["threePhase"] | false;
+                     baudRate9600 = doc["baudRate9600"] | false;
+                     rxInvert = doc["rxInvert"] | true;
+                     meterType = doc["meterType"] | 1;
+                     pollFreq = doc["pollFreq"] | 0;
+                     diagNose = doc["diagNose"] | true;
               }            
 
             if (strcmp(bestand, "/mqttconfig.json") == 0) {
@@ -242,12 +242,22 @@ bool file_open_for_read(const char* bestand)
                     strcpy(Mqtt_Port,     doc["Mqtt_Port"]     | "1883");  
                     strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"] | "domoticz/in"); 
                     strcpy(Mqtt_inTopic,  doc["Mqtt_inTopic"]  | "domoticz/out");        
+                    //char clientId[30];
+                    uint64_t chipid = ESP.getEfuseMac();
+                    snprintf(Mqtt_Clientid, sizeof(Mqtt_Clientid),"ESP32C-P1-%06X",(uint32_t)(chipid & 0xFFFFFF));
+                    //snprintf(Mqtt_Clientid, sizeof(Mqtt_Clientid), "%s",doc["Mqtt_Clientid"] | clientId);
+                    
+                    //consoleOut("spiffs Mqtt_Clientid = " + String(Mqtt_Clientid));
+                    
+                    //strcpy(Mqtt_Clientid, doc["Mqtt_Clientid"] | clientId);
+                    //snprintf(buffer, sizeof(buffer), "ESP32C3-P1%s", getChipid(true));
+                    //strcpy(Mqtt_Clientid, doc["Mqtt_Clientid"] | buffer); 
                     strcpy(Mqtt_Username, doc["Mqtt_Username"] | "n/a");
                     strcpy(Mqtt_Password, doc["Mqtt_Password"] | "n/a");
                     
-                    Mqtt_Format =         doc["Mqtt_Format"].as<int>() | 1;
-                    gas_Idx =             doc["gas_Idx"].as<int>() | 100;         
-                    el_Idx =              doc["el_Idx"].as<int>() | 100;
+                    Mqtt_Format =         doc["Mqtt_Format"] | 1;
+                    gas_Idx =             doc["gas_Idx"] | 100;         
+                    el_Idx =              doc["el_Idx"] | 100;
             }
 
               return true;

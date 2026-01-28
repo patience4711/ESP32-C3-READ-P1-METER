@@ -38,7 +38,7 @@ void zendPageGEOconfig( AsyncWebServerRequest *request ) {
     
     webPage.replace("{tz}",  String(gmtOffset) );
     
-    if (zomerTijd) { 
+    if ( DTS )  { 
     //  Serial.println("zomerTijd = true");
       webPage.replace("#check", "checked");
       } 

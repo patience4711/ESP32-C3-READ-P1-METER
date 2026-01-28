@@ -51,12 +51,12 @@ document.getElementById("help").style.display = "none";
   <tr><td >port<td><input class='inp2' name='mqtPort' value='{mqttPort}' size='31' placeholder='mqtt port'></tr>
   
   <tr><td>send topic:&nbsp<td><input class='inp6' name='mqtoutTopic' value='{mqttoutTopic}' placeholder='mqtt topic receive' length='60'></tr>
-  <tr><td>receive topic:&nbsp<td><input class='inp6' value='{mqttinTopic}' length='60' tittle='readonly' readonly ></tr>
+  <tr><td>receive topic:&nbsp<td><input class='inp6' name='mqtinTopic' value='{mqttinTopic}' length='60'  ></tr>
   <tr><td>gas idx:&nbsp<td><input class='inp2' name='gasidx' value='{domg}'></td></tr>
   <tr><td>el. idx:&nbsp<td><input class='inp2' name='elidx' value='{dome}'></td></tr>
   <tr><td>username:&nbsp<td><input class='inp6' name='mqtUser' value='{mqtu}'></td></tr>
   <tr><td>password:&nbsp<td><input class='inp6' name='mqtPas' value='{mqtp}'></td></tr>
-  <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}'></td></tr>
+  <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}' readonly></td></tr>
   </form>
   </td></table>
   </div><br>
@@ -77,14 +77,15 @@ webPage += FPSTR(MQTTCONFIG);
  
 webPage.replace("{mqttAdres}",    String(Mqtt_Broker)   );
 webPage.replace("{mqttPort}",     String(Mqtt_Port)     );
-String intopic = "ESP-P1METER-" + String(getChipId(true)) + "/in";
-webPage.replace("{mqttinTopic}",  intopic  );
+//String intopic = "ESP-P1METER-" + String(getChipId(true)) + "/in";
+webPage.replace("{mqttinTopic}",  String(Mqtt_inTopic)  );
 webPage.replace("{mqttoutTopic}", String(Mqtt_outTopic) );
-webPage.replace("{domg}",         String(gas_Idx) );
-webPage.replace("{dome}",         String(el_Idx) ); 
+webPage.replace("{domg}",         String(gas_Idx)       );
+webPage.replace("{dome}",         String(el_Idx)        ); 
 webPage.replace("{mqtu}",         String(Mqtt_Username) );
 webPage.replace("{mqtp}",         String(Mqtt_Password) );
-webPage.replace("{mqtc}"         , String(Mqtt_Clientid) );
+Serial.println("zendPage Mqtt_Clientid = " + String(Mqtt_Clientid));
+webPage.replace("{mqtc}",         String(Mqtt_Clientid) );
 switch (Mqtt_Format) {
  case 0:
     webPage.replace("fm_0", "selected");

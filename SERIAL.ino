@@ -40,7 +40,7 @@ void handle_Serial () {
               Serial.println(F("PRINTOUT-SPIFFS"));
               Serial.println(F("METERPOLL-TEST;"));
               Serial.println(F("DELETE-FILE=filename; (delete a file)")); 
-                     
+              Serial.println(F("WRITE-MONTH=; (edit monthly values)"));  
               return;
     } else 
 
@@ -73,8 +73,7 @@ void handle_Serial () {
           }
       
           int month = doc["month"];
-
-          
+         
           MVALS[month].EC_LT = doc["CON_LT"];
           MVALS[month].EC_HT = doc["CON_HT"];
           MVALS[month].ER_LT = doc["RET_LT"];

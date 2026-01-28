@@ -23,7 +23,7 @@ const char BASISCONFIG[] PROGMEM = R"=====(
   <center><table>
     <tr><td>user passwd<td><input  class='inp5' name='pw1' length='11' placeholder='max. 10 char' value='{pw1}' pattern='.{4,10}' title='between 4 en 10 characters'></input> 
   </td></tr>
-  <tr><td class="cap">meter type<td><select name='mtype' class='sb1' id='sel' >
+  <tr><td class="cap">meter model<td><select name='mtype' class='sb1' id='sel' >
     <option value='0' mtype_0>NO METER</option>
     <option value='1' mtype_1>SAGEMCOM XS210_D ESMR5</option>
     <option value='2' mtype_2>LANDIS GYR E350 ZMF100</option></select></tr>  

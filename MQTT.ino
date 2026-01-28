@@ -11,7 +11,7 @@ bool mqttConnect() {   //
 
     //if (Mqtt_Port == 0 ) { Mqtt_Port = 1883;}   // just in case ....
     uint8_t retry = 3;
-    
+    //String Mqtt_Clientid = "ESP32-C3-P1-" + getChipId(true); // to get a client id
     //char Mqtt_inTopic[11]={"ESP-ECU/in"};
 
     while (!MQTT_Client.connected()) {
@@ -20,7 +20,7 @@ bool mqttConnect() {   //
       {
          //connected, so subscribe to inTopic (not for thingspeak)
         if( Mqtt_Format != 0 ) {
-           //String sub = "ESP32-" + getChipId(true) + "/in"; // to get a intopic ESP32-234567/in
+           
            if( MQTT_Client.subscribe ( Mqtt_inTopic ) ) {
                consoleOut("subscribed to " + String(Mqtt_inTopic));
            }
@@ -112,16 +112,16 @@ if(Mqtt_Format == 0) return;
    switch( Mqtt_Format)  { 
     case 1: 
        if(!gas) {
-        snprintf(toMQTT, sizeof(toMQTT), "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\"}" , el_Idx, CON_LT*1000 , CON_HT*1000, RET_LT*1000, RET_HT*1000, POWER_CON[0], POWER_RET[0]);
+        snprintf(toMQTT, sizeof(toMQTT), "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%.2f;%.2f;%.2f;%.2f;%.2f;%.2f\"}" , el_Idx, meter.con_lt*1000 , meter.con_ht*1000, meter.ret_lt*1000, meter.ret_ht*1000, meter.pwr_con[0], meter.pwr_ret[0]);
        } else {
-        snprintf(toMQTT, sizeof(toMQTT), "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%.3f;\"}", gas_Idx, mGAS);
+        snprintf(toMQTT, sizeof(toMQTT), "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%.3f;\"}", gas_Idx, meter.gas);
        }
        break;
     case 2:
-       snprintf(toMQTT, sizeof(toMQTT), "{\"econ_lt\":%.2f,\"econ_ht\":%.2f,\"eret_ht\":%.2f,\"eret_lt\":%.2f,\"actualp_con\":%.2f,\"actualp_ret\":%.2f,\"gas\":%.3f}" , CON_LT, CON_HT, RET_LT, RET_HT, POWER_CON[0], POWER_RET[0], mGAS);
+       snprintf(toMQTT, sizeof(toMQTT), "{\"econ_lt\":%.2f,\"econ_ht\":%.2f,\"eret_ht\":%.2f,\"eret_lt\":%.2f,\"actualp_con\":%.2f,\"actualp_ret\":%.2f,\"gas\":%.3f}" , meter.con_lt, meter.con_ht, meter.ret_lt, meter.ret_ht, meter.pwr_con[0], meter.pwr_ret[0], meter.gas);
        break;
     case 3:
-       snprintf(toMQTT, sizeof(toMQTT), "field1=%.3f&field2=%.3f&field3=%.3f&field4=%.3f&field5=%.0f&field6=%.0f&field7=%.3f&status=MQTTPUBLISH" ,CON_LT, CON_HT, RET_LT, RET_HT, POWER_CON[0], POWER_RET[0], mGAS);
+       snprintf(toMQTT, sizeof(toMQTT), "field1=%.3f&field2=%.3f&field3=%.3f&field4=%.3f&field5=%.0f&field6=%.0f&field7=%.3f&status=MQTTPUBLISH" ,meter.con_lt, meter.con_ht, meter.ret_lt, meter.ret_ht, meter.pwr_con[0], meter.pwr_ret[0], meter.gas);
        reTain=false;
        break;
      }

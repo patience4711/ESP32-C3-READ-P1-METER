@@ -104,7 +104,9 @@ tr {background-color:#ccffcc;}
   to {opacity:1 ;}
 }
 
-
+.phase-row {
+  display: none;
+}
 
 @media only screen and (max-width: 800px) {
 th, td { font-size:11px; }
@@ -148,9 +150,9 @@ tr {height:35px;}
           <td id="td0">MEDIUM<td id="td1">AMOUNT<td id="td2">UNIT<td id="td3">DETAILS</tr>
           <tr><td>energy usage</td><td id="p01"></td><td>kWh</td><td><div class='popup'><button class='btn' id='btn1'>details</button><span class='popuptext' id='myPopup'></span><div></tr>
           <tr><td>energy return</td><td id="p11"></td><td>kWh</td><td><button class='btn' id='btn2'>details</button></tr>
-          <tr><td>power l1</td><td id="p21"></td><td>W</td><td><button class='btn' id='btn3'>details</button></tr>
-          <tr><td>power l2</td><td id="p22"></td><td>W</td><td><button class='btn' id='btn4'>details</button></tr>
-          <tr><td>power l3</td><td id="p23"></td><td>W</td><td><button class='btn' id='btn5'>details</button></tr>
+          <tr><td>power phase 1</td><td id="p21"></td><td>W</td><td><button class='btn' id='btn3'>details</button></tr>
+          <tr class='phase-row'><td>power phase 2</td><td id="p22"></td><td>W</td><td><button class='btn' id='btn4'>details</button></tr>
+          <tr class='phase-row'><td>power phase 3</td><td id="p23"></td><td>W</td><td><button class='btn' id='btn5'>details</button></tr>
           <tr><td>gas consumed</td><td id="p31"></td><td>m3</td><td id="p30"></tr>
         </table>
         </div>  
@@ -175,8 +177,12 @@ var CON_HT;
 var CON_LT;
 var RET_HT;
 var RET_LT;
-var POWER_CON;
-var POWER_RET;
+var PWRC1;
+var PWRR1;
+var PWRC2;
+var PWRR2;
+var PWRC3;
+var PWRR3;
 
 function loadScript() {
  init() 
@@ -184,15 +190,19 @@ function loadScript() {
 }
 
 function init() {
+  btn1.addEventListener('click', pop1);
   btn2.addEventListener('click', pop2);
   btn3.addEventListener('click', pop3);
-  btn1.addEventListener('click', pop1);
+  btn4.addEventListener('click', pop4);
+  btn5.addEventListener('click', pop5);
   document.removeEventListener('click', hidePopup);
 }
 function change() {
   btn1.removeEventListener('click', pop1);
   btn2.removeEventListener('click', pop2);
   btn3.removeEventListener('click', pop3);
+  btn4.removeEventListener('click', pop4);
+  btn5.removeEventListener('click', pop5);
   document.addEventListener('click', hidePopup);
 }
 function pop1() {
@@ -210,7 +220,19 @@ function pop2() {
 function pop3() {
   var popup = document.getElementById("myPopup");
   popup.classList.toggle("show");
-  popup.innerHTML="ACTUAL POWER<br>  usage : " + POWER_CON + " W<br>  return : " + POWER_RET + " W";
+  popup.innerHTML="PWR PHASE 1<br>  usage : " + PWRC1 + " W<br>  return : " + PWRR1 + " W";
+  setTimeout(change,200);
+}
+function pop4() {
+  var popup = document.getElementById("myPopup");
+  popup.classList.toggle("show");
+  popup.innerHTML="PWR PHASE 2<br>  usage : " + PWRC2 + " W<br>  return : " + PWRR2 + " W";
+  setTimeout(change,200);
+}
+function pop5() {
+  var popup = document.getElementById("myPopup");
+  popup.classList.toggle("show");
+  popup.innerHTML="PWR PHASE 3<br>  usage : " + PWRC3 + " W<br>  return : " + PWRR3 + " W";
   setTimeout(change,200);
 }
 function hidePopup(a) {
@@ -248,12 +270,24 @@ function getData() {
       RET_LT = obj.RET_LT;
       PWRC1 =  obj.PWRC1; 
       PWRR1 =  obj.PWRR1;    
+      PWRC2 =  obj.PWRC2; 
+      PWRR2 =  obj.PWRR2;
+      PWRC3 =  obj.PWRC3; 
+      PWRR3 =  obj.PWRR3;      
       var enC = obj.enC;
       var enR = obj.enR;
-      var aPo = obj.aPo;
+      var aP1 = PWRC1 + PWRR2;
+      var aP2 = PWRC2 + PWRR2;
+      var aP3 = PWRC3 + PWRR3;
       //var gAa = obj.gAs;
       var rem = obj.rm;
+      var threeP = obj.threeP;
       if(rem == 0) {document.getElementById("ml").style.display = "block";} // hide menu link         
+      if(obj.threeP) {
+           document.querySelectorAll('.phase-row').forEach(row => {
+          row.style.display = 'table-row';
+          });
+      }
       cel="p01";
       if(enC < 0 ) celbga(cel); else celbgc(cel);
       if(obj.enC != "n/a") {
@@ -270,20 +304,23 @@ function getData() {
            document.getElementById(cel).innerHTML = "n/a";
            }      
 
-      cel="p21";
-      if(aPo < 0 ) celbga(cel); else celbgc(cel);
-      if(obj.aPo != "n/a") {
-           document.getElementById(cel).innerHTML = aPo;
-           } else {
-           document.getElementById(cel).innerHTML = "n/a";
-           } 
+      cel="p21"; //pwr l1
+      if(aP1 < 0 ) celbga(cel); else celbgc(cel);
+      document.getElementById(cel).innerHTML = aP1;
+           
+      cel="p22"; //pwr l1
+      if(aP2 < 0 ) celbga(cel); else celbgc(cel);
+      document.getElementById(cel).innerHTML = aP2;
+ 
+      cel="p23"; //pwr l1
+      if(aP3 < 0 ) celbga(cel); else celbgc(cel);
+      document.getElementById(cel).innerHTML = aP3;
+             
+
       cel="p31";
       celbgc(cel);
-      if(obj.gAs != "n/a") {
-           document.getElementById(cel).innerHTML = obj.gAs.toFixed(3);
-           } else {
-           document.getElementById(cel).innerHTML = "n/a";
-           }     
+      document.getElementById(cel).innerHTML = obj.gAs.toFixed(3);
+ 
 
       document.getElementById("noOutput").style.display = "none";
 

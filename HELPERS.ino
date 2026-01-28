@@ -165,22 +165,22 @@ void showDir() {
           printStruct(bestand, x);
       }
         consoleOut("the current values are:");
-        consoleOut("CON_LT = " + String(CON_LT));     
-        consoleOut("CON_HT = " + String(CON_HT));
-        consoleOut("RET_LT = " + String(RET_LT));
-        consoleOut("RET_HT = " + String(RET_HT));
-        consoleOut("mGAS = " + String(mGAS));     
+        consoleOut("meter.con_lt = " + String(meter.con_lt));     
+        consoleOut("meter.con_ht = " + String(meter.con_ht));
+        consoleOut("meter.ret_lt = " + String(meter.ret_lt));
+        consoleOut("meter.ret_ht = " + String(meter.ret_ht));
+        consoleOut("meter.gas = " +   String(meter.gas));     
 }
 
 void writeMonth(int maand) {
   //so if month overflew, the value of end 7 is in 8
 //month goes from 1 - 12 buth the struct from 0 - 12
 // we write all values in the struct with the number of current month -1
-   MVALS[maand].EC_LT = CON_LT ;
-   MVALS[maand].EC_HT = CON_HT ;
-   MVALS[maand].ER_LT = RET_LT ;
-   MVALS[maand].ER_HT = RET_HT ;
-   MVALS[maand].mGAS    = mGAS;
+   MVALS[maand].EC_LT = meter.con_lt ;
+   MVALS[maand].EC_HT = meter.con_ht ;
+   MVALS[maand].ER_LT = meter.ret_lt ;
+   MVALS[maand].ER_HT = meter.ret_ht ;
+   MVALS[maand].mGAS  = meter.gas;
 // write this in SPIFFS
    String bestand = "//mvalues_" + String(maand) + ".str"; // month5.str
    writeStruct(bestand, maand);

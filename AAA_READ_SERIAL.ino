@@ -82,9 +82,9 @@ bool read_into_array() {
                     
                     // add this byte to teleGram 
                     strncat(teleGram, inByte, 1); 
-                    // now we add the next 650 bytes to teleGram 
+                    // now we add the next 750 bytes to teleGram 
                     // until we encounter the endsign
-                    for ( int x=0; x < 650; x++) {
+                    for ( int x=0; x < 750; x++) {
                        Serial1.readBytes(inByte, 1);
                        strncat( teleGram, inByte, 1);
                        // catch the endsign
@@ -120,6 +120,8 @@ bool read_into_array() {
   return false;
 }   
 
+
+
 void decodeTelegram() {
 /* this function processes the read telegram
  *  first the crc is calculated and compared
@@ -148,8 +150,8 @@ void decodeTelegram() {
     
         if(strtol(readCRC, NULL, 16) == calculatedCRC) //do the crc's match
         {
-             consoleOut("crc is correct, now extract values..");
-            extractTelegram();   
+            consoleOut("crc is correct, now extract values..");
+            parseTelegram();   
             polled = true;
             eventSend(2); // inform the webbpage that there is new data
             consoleOut("polled true");
@@ -166,83 +168,22 @@ void decodeTelegram() {
     }
     
 }
+// float getObisValue(const char* obis)
+// {
+//     const char* p = strstr(teleGram, obis);
+//     if (!p) return NAN;
 
+//     p = strchr(p, '(');
+//     if (!p) return NAN;
+//     p++;  // past '('
 
-void extractTelegram() {
-/*
-This function extracts the interesting values from the telegram as floats
-therefor we call the function returnFloat
-with arguments :len ( the line length excl *kWh
-: the start of the number and : the length of the number
-*/    
-char what[24];
-      // the meter type in the 1st row /Ene5\XS210 ESMR 5.0
-      // find 1-3:0.2.8(50) len = 13 start = 10 count = 2
-      strcpy(what, "1-3:0.2.8(");
-      if(strstr(teleGram, what )) 
-      {
-          SMR = round0(returnFloat(what, 13, 10, 2));
-           consoleOut("SMR = " + String(SMR));
-      }
+//     return atof(p);
+// }
 
-    // find 1-0:1.8.1(000051.775*kWh) len = 20
-      strcpy(what, "1-0:1.8.1(");
-      if(strstr(teleGram, what )) {
-          CON_LT = returnFloat(what, 20, 10, 10);
-           consoleOut("extracted CON_LT = " + String(CON_LT, 3));
-      }  
-    // find 1-0:1.8.2(000000.000*kWh) len = 20
-      strcpy(what, "1-0:1.8.2(");
-      if(strstr(teleGram, what )) {
-          CON_HT = returnFloat(what, 20, 10, 10);
-           consoleOut("extracted CON_HT = " + String(CON_HT, 3));
-     }
-    // find 1-0:2.8.1(0000524.413*kWh) len = 20
-      strcpy(what, "1-0:2.8.1(");
-      if(strstr(teleGram, what )) {
-          RET_LT = returnFloat(what, 20, 10, 10);
-           consoleOut("extracted RET_LT = " + String(RET_LT, 3));
-    }  
-    // find 1-0:2.8.2(000000.000*kWh) len = 20
-      strcpy(what, "1-0:2.8.2(");
-      if(strstr(teleGram, what )) {
-          RET_HT = returnFloat(what, 20, 10, 10);
-           consoleOut("extracted RET_HT = " + String(RET_HT, 3));
-    }
-    // find 1-0:1.7.0(00.335*kW) len=16 start 10 count 6
-      strcpy(what, "1-0:1.7.0(");
-      if(strstr(teleGram, what )) {
-          POWER_CON[0] = returnFloat(what, 16, 10, 6) * 1000; // watts
-           consoleOut("extracted POWER_CON = " + String(POWER_CON[0], 3));
-     } 
-    // find 1-0:2.7.0(00.000*kW) len=16 start 10 count 6
-      strcpy(what, "1-0:2.7.0(");
-      if(strstr(teleGram, what )) {
-          POWER_RET[0] = returnFloat(what, 16, 10, 6) * 1000; //watts
-           consoleOut ("extracted POWER_RET = " + String(POWER_RET[0], 3));         
-      }
-       
-    
-    // find 0-1:24.2.1(171105201000W)(00016.713*m3) len 39 start 26 count 9
-      strcpy(what, "0-1:24.2.1");
-      if(strstr(teleGram, what )) {
-          mGAS = returnFloat(what, 39, 26, 9);
-           consoleOut ("extracted mGAS = " + String(mGAS, 3));        
-      }
-}
+// float getObisValue(const char* obis)
+// {
+//     const char* p = strstr(teleGram, obis);
+//     if (!p) return NAN;
 
-
-float returnFloat(char what[24], uint8_t len, uint8_t bgn, uint8_t count) { 
-   char extract[len+1];
-   char number[16];
-   strncpy(extract, strstr(teleGram, what), len);
-   // now we have an array starting with the line that contains 'what'
-   // Serial.println("extract = " + String(extract));
-   // we copy the characters representing the value in tail
-   strncpy(number, extract + bgn, count);
-   //  Serial.println("tail= " + String(tail));
-   // now we have the number, convert it to a float
-   return atof(number);
-}
-
-
+//     return atof(p + strlen(obis)); // atof stops automatically when a non numeric character is encountered
+// }

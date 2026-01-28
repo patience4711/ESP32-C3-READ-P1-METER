@@ -175,36 +175,32 @@ server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     //StaticJsonDocument<160> doc; //(160);
     JsonDocument root; //(160);
-    //long ECON_LT = 0; //Meter reading Electrics - consumption low tariff
-    //long ECON_HT = 0; //Meter reading Electrics - consumption high tariff
-    //long ERET_LT = 0; //Meter reading Electrics - return low tariff
-    //long ERET_HT = 0; //Meter reading Electrics - return high tariff
-    //long PACTUAL_CONS = 0;  //Meter reading Electrics - Actual consumption
-    //long PACTUAL_RET = 0;  //Meter reading Electrics - Actual return
-    //long mGAS = 0;  //Meter reading Gas
-    //long prevGAS = 0;
-    float enReturn = RET_HT+RET_LT;
-    float enCons   = CON_HT+CON_LT;
-    float Power = POWER_CON[0] - POWER_RET[0];
+ 
+    float enReturn = meter.ret_ht + meter.ret_lt;
+    float enCons   = meter.con_ht + meter.con_lt;
+    //uint16_t Power = meter.pwr_con[0] - meter.pwr_ret[0] + meter.pwr_con[1] - meter.pwr_ret[1] + meter.pwr_con[2] - meter.pwr_ret[2];
+    
+    
     root["timestamp"] = String(timeStamp);
 
-    root["CON_HT"] = round3(CON_HT);
-    root["CON_LT"] = round3(CON_LT); 
+    root["CON_HT"] = round3(meter.con_ht);
+    root["CON_LT"] = round3(meter.con_lt); 
     
-    root["RET_HT"] = round3(RET_HT);// else root["eNrht"] = "n/a";
-    root["RET_LT"] = round3(RET_LT);// else root["eNrlt"] = "n/a";
-
-    root["PWRC1"] = round0(POWER_CON[0]); //else root["pac"] = "n/a";
-    root["PWRR1"] = round0(POWER_RET[0]); //else root["par"] = "n/a";
-    //root["PWRC2"] = round0(POWER_CON[1]); //else root["pac"] = "n/a";
-    //root["PWRR2"] = round0(POWER_RET[1]); //else root["par"] = "n/a";
-    //root["PWRC3"] = round0(POWER_CON[2]); //else root["pac"] = "n/a";
-    //root["PWRR3"] = round0(POWER_RET[2]); //else root["par"] = "n/a";
-    //root["enR"] = round3(enReturn); //else root["enR"] = "n/a";
-   // root["enC"] = round3(enCons); //else root["enC"] = "n/a";
-    root["aPo"] = round0(Power); //else root["aPo"] = "n/a";
-    root["gAs"] = round3(mGAS); //else root["gAs"] = "n/a";
-    root["threePhase"] = threePhase; 
+    root["RET_HT"] = round3(meter.ret_ht);
+    root["RET_LT"] = round3(meter.ret_lt);
+    
+    root["PWRC1"] = round0(meter.pwr_con[0]); 
+    root["PWRR1"] = round0(meter.pwr_ret[0]);
+    root["PWRC2"] = round0(meter.pwr_con[1]); 
+    root["PWRR2"] = round0(meter.pwr_ret[1]);
+    root["PWRC3"] = round0(meter.pwr_con[2]); 
+    root["PWRR3"] = round0(meter.pwr_ret[2]);
+    
+    root["enR"] = round3(enReturn); 
+    root["enC"] = round3(enCons); 
+    //root["aPo"] = round0(Power); 
+    root["gAs"] = round3(meter.gas); 
+    root["threeP"] = threePhase; 
     root["rm"] = remote;
    
     serializeJson(root, * response);
@@ -226,22 +222,27 @@ server.on("/api/v1/data", HTTP_GET, [](AsyncWebServerRequest *request)
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     JsonDocument root; //(length current 291);
-   
-    root["smr_version"] = String(SMR);
+    
+    root["smr_version"] = String(meter.smr);
     root["meter_model"] = meterType;
     root["wifi_ssid"] = "WiFi.SSID()";
     root["wifi_strength"] = WiFi.RSSI();
-    root["total_power_import_t1_kwh"] = round3(CON_HT); // tariff 1
-    root["total_power_import_t2_kwh"] = round3(CON_LT); // tariff 2
-    root["total_power_export_t1_kwh"] = round3(RET_HT); // tariff 1
-    root["total_power_export_t2_kwh"] = round3(RET_LT); // tariff 2   
+    root["total_power_import_t1_kwh"] = round3(meter.con_ht); // tariff 1
+    root["total_power_import_t2_kwh"] = round3(meter.con_lt); // tariff 2
+    root["total_power_export_t1_kwh"] = round3(meter.ret_ht); // tariff 1
+    root["total_power_export_t2_kwh"] = round3(meter.ret_lt); // tariff 2   
+    // bower balance calculations
+    float pwr_l1 = meter.pwr_con[0] - meter.pwr_ret[0];
+    float pwr_l2 = meter.pwr_con[1] - meter.pwr_ret[1];
+    float pwr_l3 = meter.pwr_con[2] - meter.pwr_ret[2];
+    float pwr_tot = pwr_l1 + pwr_l2 + pwr_l3; 
     
-    root["active_power_w"]    = round0(POWER_CON[0]);
-    root["active_power_l1_w"] = round0(POWER_RET[0]);
+    root["active_power_w"]    = round0(pwr_tot); // balance of ret and con
+    root["active_power_l1_w"] = round0(meter.pwr_ret[0]); // balance of ret & con
     if(threePhase)
         {
-          root["active_power_l2_w"]  = round0(POWER_RET[1]);
-          root["active_power_l3_w"]  = round0(POWER_RET[2]);
+          root["active_power_l2_w"]  = round0(pwr_l2);
+          root["active_power_l3_w"]  = round0(pwr_l3);
         }
     
     String jsonString;
