@@ -27,8 +27,8 @@ You can use the provided binary but if you must compile it yourself: Use arduino
 <br>Please note: by popular demand I have published the code here but i do not feel responsible for problems as to compiling. Impossible for me to know why it doesn't compile in your situation.
 
 ## downloads
-jan 28 2026: There is a new version available.<br> 
-Download [ESP32-C3-P1METER-v0_4](https://github.com/patience4711/ESP32-C3-READ-P1-METER/blob/main/ESP32C3_P1METER_v0_4.ino.bin)<br>
+oct 20 2026: There is a new version available.<br> 
+Download [ESP32-C3-P1METER-v0_4]https://github.com/patience4711/ESP32-C3-READ-P1-METER/blob/main/ESP32C3_P1METER_v0_4.ino.bin)<br>
 
 ## features
 - Simply to connect to your wifi
@@ -57,7 +57,8 @@ Next the checksum calculation is done and when the char array is approved, the i
 
 ## changelog ##
 version ESP32-C3-P1METER-v0_4
-- rebewed the parsing of the telegram
+- made suitable for high frequency polling (on demand by f.i. a battery)
+- renewed the parsing of the telegram
 - made suitibel for other meters
 - cosmetical improvements
  
