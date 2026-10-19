@@ -2,20 +2,18 @@
 //{ check
 const char MENUPAGE[] PROGMEM = R"=====(
 <body>
-<style>
-a:link, a:visited { width: 98px;}
-</style>
+<style>#menu2 a:link, #menu2 a:visited { width: 98px;}</style>
 <script type="text/javascript" src="SECURITY"></script>
 <script> function close() {window.location.href='/';} </script>
 <div id='msect'>
 <div id='menu'>
 <a href="/" class='close' onclick='close();'>&times;</a>  
 </div>  
-</div>
-<br><br>
-<div id='msect'><kop>ESP32C3 P1 METER MENU</kop></div><br><br><br>
 
-<div id='msect'>
+<br><br>
+<kop>ESP32C3 P1 METER MENU</kop><br><br><br>
+<div class="divstijl">
+<div id="menu2">
 <table><tr>
   <td style="width:100px"><a href='/ABOUT'>system info</a></td><td style="width:60px"></td><td style="width:100px">
   <a href='/MQTT'>mosquitto</a></<td></tr>
@@ -34,7 +32,7 @@ a:link, a:visited { width: 98px;}
   
   </table>  
 
-  </div>
+  </div></div></div>
   
 </body></html>
   )=====";

@@ -12,30 +12,29 @@ document.getElementById("help").style.display = "none";
   <span class='close' onclick='sluit()'>&times;</span>
   <b>mosquitto message format:</b><br>
   <b>f0:</b> mosquitto disabled<br><br>  
-  <b>f1:</b> {"idx":123,"nvalue":0,"svalue":"CON_LT,CON_HT,RET_LT,RET_HT,POWER_CON,POWER_RET);"}<br>
-             {"idx":915,"nvalue":0,"svalue":"GAS;"}<br><br>
+  <b>f1:</b> {"idx":123,"nvalue":0,"svalue":"meter.con_lt,meter.con_ht,meter.ret_lt,meter.ret_ht,meter.pwr_con,meter.pwr_ret);"}<br>
+             {"idx":915,"nvalue":0,"svalue":"meter.gas;"}<br><br>
   
-  <b>f2:</b> {"con_lt":123.22,"con_ht":234.55,"ret_ht":123.22,"ret_lt":222.33,"gas":1234.555}<br><br>
-  <b>f3:</b> {"field1=:CON_LT&field2=CON_HT&field3=RET_LT&field4=RET_HT&field5=POWER_CON&field6=POWER_RET&field7=GAS&status=MQTTPUBLISH"}<br>
+  <b>f2:</b> {"econ_lt":123.22,"econ_ht":234.55,"eret_ht":123.22,"eret_lt":222.33,"gas":1234.555}<br><br>
+  <b>f3:</b> {"field1=:meter.con_lt&field2=meter.con_ht&field3=meter.ret_lt&field4=meter.ret_ht&field5=meter.pwr_con&field6=meter.pwr_ret&field7=metre.gas&status=MQTTPUBLISH"}<br>
   <br>Format 2 has the retainflag set.
   <br><br> 
   
   <b>receive topic:</b><br>Fixed value, the topic on which is subscribed for incoming mqtt.<br><br>
   <b>mqtt_username en password</b><br>Optional, these can be left empty.<br><br>
   <b>explation</b><br>
-  ECON_LT: CON-HT: energy consumed low/high tariff<br>
-  ERET_LT: RET-HT: energy returned low/high tariff<br>
-  POWER_CON: POWER_RET: actual power consume/return<br>
+  meter.con_lt: meter.con_ht: energy consumed low/high tariff<br>
+  meter.ret_lt: meter.ret_ht: energy returned low/high tariff<br>
+  meter.pwr_con: meter.pwr_ret: actual power consume/return<br>
 
   </div>
-</div>
-<div id='msect'><div id='menu' style="align-items:left;">
+<div id='menu' style="align-items:left;">
 <a href='#' onclick='helpfunctie()'>&quest;</a>
 <a href="#" class='close' onclick='cl();'>&times;</a>
 <a href="#" id="sub" onclick='submitFunction()'>save</a>
-</div></div>
-<div id='msect'><kop>P1 METER MOSQUITTO</kop></div>
-<div id='msect'>
+</div>
+<kop>P1 METER MOSQUITTO</kop>
+
   <div class='divstijl'>
   <center>
   <form id='formulier' method='get' action='submitform' oninput='showSubmit();'><table>
@@ -51,12 +50,12 @@ document.getElementById("help").style.display = "none";
   <tr><td >port<td><input class='inp2' name='mqtPort' value='{mqttPort}' size='31' placeholder='mqtt port'></tr>
   
   <tr><td>send topic:&nbsp<td><input class='inp6' name='mqtoutTopic' value='{mqttoutTopic}' placeholder='mqtt topic receive' length='60'></tr>
-  <tr><td>receive topic:&nbsp<td><input class='inp6' name='mqtinTopic' value='{mqttinTopic}' length='60'  ></tr>
+  <tr><td>receive topic:&nbsp<td><input class='inp6' value='esp32-p1/in' length='60' tittle='readonly' readonly ></tr>
   <tr><td>gas idx:&nbsp<td><input class='inp2' name='gasidx' value='{domg}'></td></tr>
   <tr><td>el. idx:&nbsp<td><input class='inp2' name='elidx' value='{dome}'></td></tr>
   <tr><td>username:&nbsp<td><input class='inp6' name='mqtUser' value='{mqtu}'></td></tr>
   <tr><td>password:&nbsp<td><input class='inp6' name='mqtPas' value='{mqtp}'></td></tr>
-  <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}' readonly></td></tr>
+  <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}'></td></tr>
   </form>
   </td></table>
   </div><br>
@@ -77,15 +76,14 @@ webPage += FPSTR(MQTTCONFIG);
  
 webPage.replace("{mqttAdres}",    String(Mqtt_Broker)   );
 webPage.replace("{mqttPort}",     String(Mqtt_Port)     );
-//String intopic = "ESP-P1METER-" + String(getChipId(true)) + "/in";
-webPage.replace("{mqttinTopic}",  String(Mqtt_inTopic)  );
+String intopic = "ESP-P1METER-" + String(getChipId(true)) + "/in";
+webPage.replace("{mqttinTopic}",  intopic  );
 webPage.replace("{mqttoutTopic}", String(Mqtt_outTopic) );
-webPage.replace("{domg}",         String(gas_Idx)       );
-webPage.replace("{dome}",         String(el_Idx)        ); 
+webPage.replace("{domg}",         String(gas_Idx) );
+webPage.replace("{dome}",         String(el_Idx) ); 
 webPage.replace("{mqtu}",         String(Mqtt_Username) );
 webPage.replace("{mqtp}",         String(Mqtt_Password) );
-Serial.println("zendPage Mqtt_Clientid = " + String(Mqtt_Clientid));
-webPage.replace("{mqtc}",         String(Mqtt_Clientid) );
+webPage.replace("{mqtc}"         , String(Mqtt_Clientid) );
 switch (Mqtt_Format) {
  case 0:
     webPage.replace("fm_0", "selected");

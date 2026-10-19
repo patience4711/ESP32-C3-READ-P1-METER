@@ -7,11 +7,7 @@ const char GEOCONFIG[] PROGMEM = R"=====(
 <a href="#" id="sub" onclick='submitFunction()'>save</a>
 <a href="#" class='close' onclick='cl();'>&times;</a>
 </div>
-</div>
-<div id='msect'>
 <br><kop>P1METER LOCAL SETTINGS</kop><br><br>
-</div>
-<div id='msect'>
   <div class='divstijl' style='height:52vh;'>
   <form id='formulier' method='get' action='submitform' oninput='showSubmit()'>
   <center><table>
@@ -38,7 +34,7 @@ void zendPageGEOconfig( AsyncWebServerRequest *request ) {
     
     webPage.replace("{tz}",  String(gmtOffset) );
     
-    if ( DTS )  { 
+    if (zomerTijd) { 
     //  Serial.println("zomerTijd = true");
       webPage.replace("#check", "checked");
       } 

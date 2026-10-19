@@ -26,14 +26,15 @@ ICACHE_RAM_ATTR void isr() {
     return; // jump out, the button is high so it was a coincidence
  }
 //if we are here we passed the debounce
-   digitalWrite(led_onb, LOW); // led on
+   //digitalWrite(led_onb, LOW); // led on
+   my_wifiConnect.ledOn(255,0,0);
  //we wait again but longer 
  //DebugPrintln("button still pressed, thus not accidentally");
  // first the led is flashed
       while (endtime - starttime  <= 500) { //2000 millis = 2 sec
       endtime = millis();
       }
-      digitalWrite(led_onb, HIGH); // led off
+      my_wifiConnect.ledOff();
       while (endtime - starttime  <= 1500) 
       { //2000 millis = 2 sec
       endtime = millis();
@@ -58,7 +59,7 @@ ICACHE_RAM_ATTR void isr() {
            attachInterrupt(digitalPinToInterrupt(knop), isr, FALLING);
            return; // jump out, the button is high so it was a clumpsiness
          }
-     digitalWrite(led_onb, LOW); //de onboard led aan
+     my_wifiConnect.ledOn(255,0,0);
      //Serial.println("button still pressed, onboard led on");
      //next we wait some time again
      while (endtime - starttime  <= 9000) //2000 millis = 2 sec
@@ -66,7 +67,7 @@ ICACHE_RAM_ATTR void isr() {
          endtime = millis();
      }
            
-         digitalWrite(led_onb, HIGH); //the onboard led off
+         my_wifiConnect.ledOff();
          // we test the button again, 
          val = digitalRead(knop);
          if (val == 0) // still pressed

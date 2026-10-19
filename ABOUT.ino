@@ -69,10 +69,10 @@ void handleAbout(AsyncWebServerRequest *request) {
    strcat(page, temp);
   
 
-    sprintf(temp, "<tr><td>current errorCode<td>%d</td>", errorCode); 
+    sprintf(temp, "<tr><td>failCount<td>%d</td>", failCount); 
     strcat(page, temp);
-//  sprintf(temp, "<tr><td>ZB resetCounter<td> %d</td></tr></table>" , resetCounter );
-//  strcat(page, temp);
+   // sprintf(temp, "<tr><td>last reset reason<td> %d</td></tr></table>" , resetCounter );
+   // strcat(page, temp);
    sprintf(temp, "<tr><td>securityLevel<td>%d</td>" , securityLevel );
    strcat(page, temp);
    request->send(200, "text/html", page); //send the html code to the client

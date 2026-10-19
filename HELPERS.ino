@@ -1,3 +1,41 @@
+
+void eventSend(byte what) {
+  if (what == 1) {
+      events.send( "general", "message"); //getGeneral triggered            
+  } else 
+     if (what == 2) {
+     events.send( "getall", "message"); //getAll triggered
+  } else {  
+     events.send( "reload", "message"); // both triggered
+  }
+}
+
+void resetCause(){
+  // Read the current reset reason
+  esp_reset_reason_t Reason = esp_reset_reason();
+
+  // Start Preferences in RW mode
+  prefs.begin("reset_log", false);  // namespace: "reset-info"
+
+  // Save current reset reason
+  prefs.putInt("last_reset", (int)Reason);
+
+  // Optional: Read previous reset reason (before the last reset)
+  int prevReason = prefs.getInt("prev_reset", -1); // default -1 if not found
+  prefs.putInt("prev_reset", (int)Reason);    // Shift current to previous
+
+  // Close preferences
+  prefs.end();
+}  
+
+void sendHeap() {
+// should be something like {"command":"udevice", "idx":1234, "svalue":"12345"}
+ 
+String toMQTT = "{\"idx\":922,\"nvalue\":0,\"svalue\":\"" + String(ESP.getFreeHeap()) + "\"}";
+consoleOut("sendHeap toMQTT = " + toMQTT);
+if(mqttConnect() ) MQTT_Client.publish ( Mqtt_outTopic, toMQTT.c_str(), false );
+}
+
 // * * * test serial port * * * 
 void testMessage() {
 char * inMessage = {0};
@@ -20,45 +58,36 @@ consoleOut("performing loopback test on uart0");
     }
 
      //now read the answer
-     consoleOut("reading Serial");
+     consoleOut("reading Serial1");
      waitSerial1Available(1);  
      
      if( Serial1.available() ) 
      {
         int inByte = Serial1.read();
-        Serial.write(inByte);
-     } else 
-     {  consoleOut("Serial1 has no data");}
+        Serial1.write(inByte);
+   } else { consoleOut("Serial1 has no data");}
 }
 
 
 // function to show debug info
 void consoleOut(String toLog) {
-
- switch (diagNose) 
-    { case 0:  
-          break;
-      case 1:       
-          delay(100); // otherwise the socket cannot keep up
-          ws.textAll(toLog);
-          break;
-      case 2: 
-          Serial.println(toLog);
-          break;
-      // case 3:
-      //      toLog += "\n";
-      //     debugLog += toLog;   
-    }
+// decide to log to serial or the console 
+  if(diagNose) 
+  {
+    Serial.println(toLog);
+  } 
 }
 
-// flash the led
-void ledblink(int i, int wacht) {
-  for(int x=0; x<i; x++) {
-    digitalWrite(led_onb, LED_AAN);
-    delay(wacht);
-    digitalWrite(led_onb, LED_UIT);
-    delay(wacht);
-   }
+void loginBoth(AsyncWebServerRequest *request, String who) {
+  //String authFailResponse = "<h2>login failed <a href='/'>click here</a></h2>";
+  if (who == "admin" ){
+  const char* www_realm = "login as administrator."; 
+    if (!request->authenticate("admin", pswd)) return request->requestAuthentication();
+  }
+  if (who == "both" ){
+  const char* www_realm = "login as administrator or user."; 
+    if (!request->authenticate("admin", pswd) && !request->authenticate("user", userPwd)) return request->requestAuthentication();
+  }
 }
 
 
@@ -78,9 +107,6 @@ long getValidVal(long valNew, long valOld, long maxDiffer)
         return valOld;
       return valNew;
 }
-
-
-
 
 char *split(char *str, const char *delim)
 {
@@ -107,24 +133,7 @@ double round0(double value) {
    return (int)(value + 0.5) ;
 }
 
-bool waitSerial1Available(int howMany) // wait untill something 's available
-{
-ledblink(howMany, 30);
-consoleOut("waitSerial1Available");
-    for(int y=0; y < howMany; y++) {
-     ledblink(2, 20);        
-     Serial.println("y = " + String(y) );
-      unsigned long wait = millis();
-      while ( !Serial1.available() )
-          {
-          if ( millis() - wait > 2000) break; // after 2000 milis time out
-          }
-          // when timed out we check
-      if ( Serial1.available() ) return true;
-           
-    }
-  return false;
-}
+
 
 void empty_serial() { // remove any remaining data in serial buffer
   while(Serial.available()) {
@@ -158,18 +167,18 @@ void showDir() {
  }
 
  void printFiles() {  
-       consoleOut(" print existing files ******");
+      consoleOut(" print existing files ******");
       for (int x=1; x < 13; x++) 
       {
           String bestand = "/monthly_vals" + String(x) + ".str";
           printStruct(bestand, x);
       }
-        consoleOut("the current values are:");
-        consoleOut("meter.con_lt = " + String(meter.con_lt));     
-        consoleOut("meter.con_ht = " + String(meter.con_ht));
-        consoleOut("meter.ret_lt = " + String(meter.ret_lt));
-        consoleOut("meter.ret_ht = " + String(meter.ret_ht));
-        consoleOut("meter.gas = " +   String(meter.gas));     
+        Serial.println("the current values are:");
+        Serial.println("meter.con_lt = " + String(meter.con_lt));     
+        Serial.println("meter.con_ht = " + String(meter.con_ht));
+        Serial.println("meter.ret_lt = " + String(meter.ret_lt));
+        Serial.println("meter.ret_ht = " + String(meter.ret_ht));
+        Serial.println("meter.gas = " + String(meter.gas));     
 }
 
 void writeMonth(int maand) {
@@ -180,8 +189,8 @@ void writeMonth(int maand) {
    MVALS[maand].EC_HT = meter.con_ht ;
    MVALS[maand].ER_LT = meter.ret_lt ;
    MVALS[maand].ER_HT = meter.ret_ht ;
-   MVALS[maand].mGAS  = meter.gas;
+   MVALS[maand].mGAS    = meter.gas;
 // write this in SPIFFS
-   String bestand = "//mvalues_" + String(maand) + ".str"; // month5.str
+   String bestand = "/mvalues_" + String(maand) + ".str"; // month5.str
    writeStruct(bestand, maand);
 } 

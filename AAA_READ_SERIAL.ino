@@ -1,3 +1,4 @@
+
 /* this program works as follows: first make the enable pin high
  * next make the serial buffer empty if there is data
  * now wait until data becomes available
@@ -16,25 +17,25 @@ void meterPoll() {
    if( read_into_array() ) 
    {
       //we have a telegram
-      ledblink(3,300);
+      if(ledSignal) my_wifiConnect.ledBlink(255,0,0,3,300);
       digitalWrite(P1_ENABLE, LOW);
-      if(bootTest) 
-      {
-        // if we are testing we only want to know whether ther is a legegram received
-        // so we do not decode it but return  
-        if(strlen(teleGram) > 50)
-        {
-           strcat(teleGram, "\n this is a test telegram, retrieved at boot");
-           testFilesave();
-           consoleOut("saved a test telegram");
-        } else {
-           strcpy(teleGram, "test at boot failed");
-           consoleOut("test telegram failed");
-        }
+      //if(bootTest) 
+      // {
+      //   // if we are testing we only want to know whether there is a telegram received
+      //   // so we do not decode it but return  
+      //   if(strlen(teleGram) > 50)
+      //   {
+      //      strcat(teleGram, "\n this is a test telegram, retrieved at boot");
+      //      testFilesave();
+      //      consoleOut("saved a test telegram");
+      //   } else {
+      //      strcpy(teleGram, "test at boot failed");
+      //      consoleOut("test telegram failed");
+      //   }
 
-        consoleOut("performed the bootTest");
-        return;
-      }
+      //   consoleOut("performed the bootTest");
+      //   return;
+      // }
       // when we are not testing we decode the telegram
       decodeTelegram(); 
       sendMqtt(false);
@@ -57,11 +58,11 @@ bool read_into_array() {
     int Bytes=0;
     polled = false;
     // start waiting until serial1 available   
-    waitSerial1Available(5);
+    waitSerial1Available(maxTry);
     // flush the serial1 buffer so that we start reading at the beginning of the telegram    
     empty_Serial1();
     // now we wait again until something is avialable
-    if ( waitSerial1Available(5) ) {
+    if ( waitSerial1Available(maxTry) ) {
 
         memset(teleGram, 0, sizeof(teleGram));
         delayMicroseconds(250);
@@ -120,7 +121,24 @@ bool read_into_array() {
   return false;
 }   
 
-
+bool waitSerial1Available(int howMany) // wait untill something 's available
+{
+if(ledSignal) my_wifiConnect.ledBlink(255,0,0,howMany, 30);
+consoleOut("waitSerial1Available");
+    for(int y=0; y < howMany; y++) {
+     if(ledSignal) my_wifiConnect.ledBlink(255,0,0,2, 20);        
+     consoleOut("y = " + String(y) );
+      unsigned long wait = millis();
+      while ( !Serial1.available() )
+          {
+          if ( millis() - wait > 2000) break; // after 2000 milis time out
+          }
+          // when timed out we check
+      if ( Serial1.available() ) return true;
+           
+    }
+  return false;
+}
 
 void decodeTelegram() {
 /* this function processes the read telegram
@@ -156,7 +174,7 @@ void decodeTelegram() {
             eventSend(2); // inform the webbpage that there is new data
             consoleOut("polled true");
             // set the timestamp
-            sprintf( timeStamp, "%02d/%02d %02d:%02d", day(), month(), hour(), minute() );
+            sprintf( timeStamp, "%02d/%02d %02d:%02d:%02d", day(), month(), hour(), minute(), second() );
             return;
         } else {
              consoleOut("crc is wrong, not processed..");
@@ -168,22 +186,3 @@ void decodeTelegram() {
     }
     
 }
-// float getObisValue(const char* obis)
-// {
-//     const char* p = strstr(teleGram, obis);
-//     if (!p) return NAN;
-
-//     p = strchr(p, '(');
-//     if (!p) return NAN;
-//     p++;  // past '('
-
-//     return atof(p);
-// }
-
-// float getObisValue(const char* obis)
-// {
-//     const char* p = strstr(teleGram, obis);
-//     if (!p) return NAN;
-
-//     return atof(p + strlen(obis)); // atof stops automatically when a non numeric character is encountered
-// }

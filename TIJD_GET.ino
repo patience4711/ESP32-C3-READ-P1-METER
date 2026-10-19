@@ -15,17 +15,12 @@ bool getTijd() {
    
     epochTime += atoi(gmtOffset) * 60;
     setTime(epochTime); // dit moeten we doen omdat anders zomertijd() niet werkt
-    
-     dst = 0; // DTS not true becomes 1 or 2 if DTS == true
-     if ( DTS == true && isSummertime()) 
-     {
-        epochTime += 3600; // summertime add one hr
+    if ( zomerTijd == true ) {
+      if (zomertijd() == true) {  
+        epochTime += 3600; // een uur erbij
         setTime(epochTime);
-        dst = 1;
-     } else {
-        dst = 2; //wintertime
-     }
-
+      }
+    }
     timeRetrieved=true;  
     #ifdef LOG 
     Update_Log(1, "got time"); 

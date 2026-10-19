@@ -1,14 +1,3 @@
-
-//<input type="number" id="invCount" value="%count%" hidden>
-//<script type="text/javascript" src="SECURITY"></script>
-// <li><a href='/LOGPAGE'>log</a></li>
-  //<li><a href='/INFOPAGE'>info</a></li>  
-
-//  <li><a href='/ABOUT'>about</a></li>
-//  <li><a href='/LOGPAGE'>journal</a></li>
-  
-//  <li id="ml" style='float:right; display:none'><a id='haha' href='/MENU'>menu</a></li>
-//<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 const char P1_HOMEPAGE[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head>
 
@@ -137,9 +126,9 @@ tr {height:35px;}
 <div id='msect'>
     <div class='divstijl' id='maindiv'>
         <center>
-        
+        <br>
         <h4>ELECTRICITY / GAS @ <span id="time"></span></h4>
-        
+        <br>
         <div id='noOutput' style='display:block'>
           <h4 style='color:red'>waiting for output</h4>
         </div>
@@ -150,9 +139,9 @@ tr {height:35px;}
           <td id="td0">MEDIUM<td id="td1">AMOUNT<td id="td2">UNIT<td id="td3">DETAILS</tr>
           <tr><td>energy usage</td><td id="p01"></td><td>kWh</td><td><div class='popup'><button class='btn' id='btn1'>details</button><span class='popuptext' id='myPopup'></span><div></tr>
           <tr><td>energy return</td><td id="p11"></td><td>kWh</td><td><button class='btn' id='btn2'>details</button></tr>
-          <tr><td>power phase 1</td><td id="p21"></td><td>W</td><td><button class='btn' id='btn3'>details</button></tr>
-          <tr class='phase-row'><td>power phase 2</td><td id="p22"></td><td>W</td><td><button class='btn' id='btn4'>details</button></tr>
-          <tr class='phase-row'><td>power phase 3</td><td id="p23"></td><td>W</td><td><button class='btn' id='btn5'>details</button></tr>
+          <tr><td>power ph 1</td><td id="p21"></td><td>W</td><td><button class='btn' id='btn3'>details</button></tr>
+          <tr class='phase-row'><td>power ph 2</td><td id="p22"></td><td>W</td><td><button class='btn' id='btn4'>details</button></tr>
+          <tr class='phase-row'><td>power ph 3</td><td id="p23"></td><td>W</td><td><button class='btn' id='btn5'>details</button></tr>
           <tr><td>gas consumed</td><td id="p31"></td><td>m3</td><td id="p30"></tr>
         </table>
         </div>  
