@@ -48,6 +48,8 @@ WiFiClient espClient ;
 HTTPClient http;
 PubSubClient MQTT_Client(espClient) ;
 
+#include <Preferences.h>
+Preferences prefs;
 
 #include "CRC16.h"
 
@@ -56,6 +58,7 @@ PubSubClient MQTT_Client(espClient) ;
 #include "AAA_HOMEPAGE.h"
 
 #include "REPORT.h"
+
 
   //char ssid[33] = ""; // was 33 
   //char pass[64] = ""; // was 40
@@ -194,6 +197,3 @@ char timeStamp[20]={"not polled"};
 // #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 // #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 // #endif
-
-#include <Preferences.h>
-Preferences prefs;

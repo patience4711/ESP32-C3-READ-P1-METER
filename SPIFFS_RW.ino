@@ -43,35 +43,35 @@ void SPIFFS_read() {
 
 // writeStruct(bestand, month); // alles opslaan in SPIFFS
 
-void writeStruct( String whichfile, int mnd) {
-      File configFile = SPIFFS.open(whichfile, "w");
-      // f.i. monthly_vals0.str
-        if (!configFile)
-           {
-             Serial.print(F("Failed open for write : ")); Serial.println(whichfile);            
-           } 
+// void writeStruct( String whichfile, int mnd) {
+//       File configFile = SPIFFS.open(whichfile, "w");
+//       // f.i. monthly_vals0.str
+//         if (!configFile)
+//            {
+//              Serial.print(F("Failed open for write : ")); Serial.println(whichfile);            
+//            } 
            
-              Serial.print(F("Opened for write....")); Serial.println(whichfile);
-              configFile.write( (unsigned char *)&MVALS[mnd], sizeof(MVALS[mnd]) );
-              configFile.close();
+//               Serial.print(F("Opened for write....")); Serial.println(whichfile);
+//               configFile.write( (unsigned char *)&MVALS[mnd], sizeof(MVALS[mnd]) );
+//               configFile.close();
            
-}
+// }
 
-bool readStruct(String whichfile ,int mnd) {
-      //input = //mvalues_0.str
-      File configFile = SPIFFS.open(whichfile, "r");
+// bool readStruct(String whichfile ,int mnd) {
+//       //input = //mvalues_0.str
+//       File configFile = SPIFFS.open(whichfile, "r");
 
-      Serial.print(F( "readStruct mnd = ")); Serial.println( String(mnd) );  
-        if (!configFile)
-           {
-              Serial.print(F("Failed to open for read")); Serial.println(whichfile);
-              return false;           
-           } 
-              Serial.print(F("reading ")); Serial.println(whichfile);
-              configFile.read( (unsigned char *)&MVALS[mnd], sizeof(MVALS[mnd]) );
-              configFile.close();
-              return true;
- }
+//       Serial.print(F( "readStruct mnd = ")); Serial.println( String(mnd) );  
+//         if (!configFile)
+//            {
+//               Serial.print(F("Failed to open for read")); Serial.println(whichfile);
+//               return false;           
+//            } 
+//               Serial.print(F("reading ")); Serial.println(whichfile);
+//               configFile.read( (unsigned char *)&MVALS[mnd], sizeof(MVALS[mnd]) );
+//               configFile.close();
+//               return true;
+//  }
 
 
 
@@ -133,7 +133,8 @@ void basisConfigsave() {
     json["baud9600"] = baud9600;
     json["rxInvert"] = rxInvert;
     json["diagNose"] = diagNose; 
-    json["threePhase"] = threePhase;   
+    json["threePhase"] = threePhase;
+    json["ledSignal"] = ledSignal;   
     File configFile = SPIFFS.open("/basisconfig.json", "w");
     if (!configFile) {
     Serial.println("open basisconfig failed");
@@ -204,31 +205,33 @@ bool file_open_for_read(const char* bestand)
                       longi = doc["longi"] | 5.432;
                       lati = doc["lati"] | 51.743;                      
                       strcpy(gmtOffset, doc["gmtOffset"] | "+120");
-                      zomerTijd = doc["zomerTijd"].as<bool>() | true;
-                      securityLevel = doc["securityLevel"].as<int>() | 6;
+                      zomerTijd = doc["zomerTijd"] | true;
+                      securityLevel = doc["securityLevel"] | 6;
              }
 
             if (strcmp(bestand, "/basisconfig.json") == 0) {
                      strcpy (userPwd, doc["userPwd"] | "1111" );
                      strcpy (meterType, doc["meterType"] | "no meter" );
-                     diagNose = doc["diagNose"].as<int>() | 2;
-                     pollFreq = doc["pollFreq"].as<int>() | 0;
-                     baud9600 = doc["baud9600"].as<bool>() | true;
-                     rxInvert = doc["rxInvert"].as<bool>() | true;
-                     threePhase = doc["threePhase"].as<bool>() | false;
-              Serial.println("pollFreq read from spiffs " + String(pollFreq));
+                     diagNose = doc["diagNose"] | 2;
+                     pollFreq = doc["pollFreq"] | 0;
+                     baud9600 = doc["baud9600"] | true;
+                     rxInvert = doc["rxInvert"] | true;
+                     threePhase = doc["threePhase"] | false;
+                     ledSignal = doc["ledSignal"] | false;
+              //Serial.println("pollFreq read from spiffs " + String(pollFreq));
+              //Serial.println("baud9600 read from spiffs " + String(baud9600));
               }            
 
             if (strcmp(bestand, "/mqttconfig.json") == 0){
                       strcpy(Mqtt_Broker,   doc["Mqtt_Broker"]   | "192.168.0.100");
-                      Mqtt_Port =           doc["Mqtt_Port"].as<int>()     | 1883;  
+                      Mqtt_Port =           doc["Mqtt_Port"]     | 1883;  
                       strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"] | "domoticz/in"); 
                       //strcpy(Mqtt_inTopic,  doc["Mqtt_inTopic"]  | "domoticz/out");        
                       strcpy(Mqtt_Username, doc["Mqtt_Username"] | "n/a");
                       strcpy(Mqtt_Password, doc["Mqtt_Password"] | "n/a");
-                      Mqtt_Format =         doc["Mqtt_Format"].as<int>() | 0;
-                      gas_Idx =             doc["gas_Idx"].as<int>() | 000;         
-                      el_Idx =              doc["el_Idx"].as<int>() | 000;
+                      Mqtt_Format =         doc["Mqtt_Format"] | 0;
+                      gas_Idx =             doc["gas_Idx"] | 000;         
+                      el_Idx =              doc["el_Idx"] | 000;
             }
 
               return true;

@@ -1,12 +1,14 @@
 void start_asyserver() {
 
-
+// when there is a pollfreq below 10, the meter is polled if higher then the request
+// answers with automatically polled data
 server.on("/api/v1/data", HTTP_GET, [](AsyncWebServerRequest *request)
 {
     // this link provides the data on the api request
     consoleOut("answer a api request");
     // if there is a high poll frequency we poll the meter when the poll is 3, 4, 5, 6, 7 seconds old
-    if (pollFreq >= 1 && pollFreq <= 10) {
+    if (pollFreq >= 1 && pollFreq <= 10) 
+    {
       unsigned long currentTime = millis();
       // Bereken de dynamische cooldown in milliseconden (bijv. 3 * 1000 = 3000ms)
       unsigned long cooldownMs = pollFreq * 1000;
@@ -221,7 +223,7 @@ server.on("/MQTT", HTTP_GET, [](AsyncWebServerRequest *request) {
     zendPageMQTTconfig(request);
 });
 
-server.on("/VALUECONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
+server.on("/SETVALUES", HTTP_GET, [](AsyncWebServerRequest *request) {
     if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
     loginBoth(request, "admin");
     strcpy( requestUrl, request->url().c_str() );
@@ -272,11 +274,6 @@ server.on("/REPORT", HTTP_GET, [](AsyncWebServerRequest *request) {
     //handleReport(request);
     request->send_P(200, "text/html", REPORTPAGE, putReport);
 });
-
- 
-// ********************************************************************
-
-
 
 
 // Handle Web Server Events

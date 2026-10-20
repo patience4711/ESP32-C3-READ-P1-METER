@@ -40,8 +40,63 @@ if ( intern )
              request->send ( 200, "text/plain", teZenden ); 
              actionFlag = 26; // takes care for the polling
              return;
-       }
+       } else
        
+        if ( serverUrl.indexOf("/READINGS") > -1) {
+            // Start th HTML page with minimal styling for the table
+            String html = "<html><head><meta name='viewport' content='width=width, initial-scale=1.0'>";
+            html += "<style>";
+            html += "body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }";
+            html += "table { width: 100%; max-width: 600px; border-collapse: collapse; background: white; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }";
+            html += "th, td { padding: 5px 8px; text-align: left; border-bottom: 1px solid #ddd; }";
+            html += "th { background-color: #4CAF50; color: white; }";
+            html += "tr:nth-child(even) { background-color: #f2f2f2; }";
+            html += "h2 { text-align: center; color: #333; }";
+            html += "</style></head><body>";
+            
+            html += "<h2>Monthly Meterreadings</h2>";
+            html += "<table>";
+            html += "<tr><th>Month</th><th>cons LT (kWh)</th><th>cons HT(kWh)</th><th>Return LT (kWh)</th><th>Return HT (kWh)</th><th>Gas (m3)</th></tr>";
+
+            // walk through the months 1 to 12
+            for (int m = 1; m <= 12; m++) {
+               html += "<tr>";
+               html += "<td><b>" + String(m) + "</b></td>";
+               html += "<td>" + String(MVALS[m].EC_LT, 3) + "</td>";
+               html += "<td>" + String(MVALS[m].EC_HT, 3) + "</td>";
+               html += "<td>" + String(MVALS[m].ER_LT, 3) + "</td>";
+               html += "<td>" + String(MVALS[m].ER_HT, 3) + "</td>";
+               html += "<td>" + String(MVALS[m].mGAS, 3) + "</td>";
+               html += "</tr>";
+            }
+            html += "</table></body></html>";
+
+            request->send(200, "text/html", html);
+            return;
+      } else
+
+      if ( serverUrl.indexOf("/GETMONTH") > -1) {
+            int m = 1;
+            if (request->hasParam("mnr")) {
+               m = request->arg("mnr").toInt();
+            }
+            
+            // Veiligheidscheck voor de array-grenzen
+            if (m < 1 || m > 12) m = 1;
+
+            JsonDocument doc;
+            doc["econht"] = MVALS[m].EC_HT;
+            doc["econlt"] = MVALS[m].EC_LT;
+            doc["eretht"] = MVALS[m].ER_HT;
+            doc["eretlt"] = MVALS[m].ER_LT;
+            doc["mgas"]   = MVALS[m].mGAS;
+
+            String response;
+            serializeJson(doc, response);
+            request->send(200, "application/json", response);
+            return;
+            }
+      
       //  if ( serverUrl.indexOf("/get.ResetReason") > -1) {
       //   //consoleOut("reset check");
       //   prefs.begin("reset_log", false); //namespace name is reset_log

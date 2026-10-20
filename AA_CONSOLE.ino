@@ -3,17 +3,18 @@
 const char CONSOLE_HTML[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<title>ESP-P1 METER</title>
+<title>ESP32-P1 METER</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" type="text/css" href="/STYLESHEET">
 <script>
 function helpfunctie() {
-document.getElementById("help").style.display = "block";
+document.getElementById("hulp").style.display = "block";
 }
 function sl() {  
-document.getElementById("help").style.display = "none";
+document.getElementById("hulp").style.display = "none";
 }
+
 </script>
 
 <style>
@@ -23,19 +24,26 @@ document.getElementById("help").style.display = "none";
  li a:hover {
    background-color: #333 !important;
 }
-#help {
+#hulp {
   background-color: #ffffff; 
   border: solid 2px; 
   display:none; 
   padding:4px;
   width:94vw;
 }
+.divstl { width: 60vw; height:84vh; background: #dbd89c; border:1px solid; padding-left:10px;
+}
+@media only screen and (max-width: 800px) {
+  .divstl { width:98%; }
+  }
+
+
 </style>
 </head>
 <body>
-  <div id='help'>
+  <div id='hulp'>
   <span class='close' onclick='sl();'>&times;</span><h3>CONSOLE COMMANDS</h3>
-  <b>PRINTOUT-SPIFFS: </b> show filesystem<br><br>
+  <b>PRINT-SPIFFS: </b> show filesystem<br><br>
   <b>DELETE-FILE=/filename: </b> delete a file.<br><br>
   <b>POLL-METER: </b> poll the p1 meter now <br><br>
   <b>TEST-MOSQUITTO: </b>sends a mqtt testmessage<br><br>
@@ -46,21 +54,16 @@ document.getElementById("help").style.display = "none";
 <div id='menu'>
 <a href='/MENU' onclick='confirmExit()' class='close'>&times;</span></a>
 <a href='#' onclick='helpfunctie()'>help</a>
-<a href='#'><input type="text" placeholder="type here" id="tiep"></a>
-</div>
+<a><input type="text" placeholder="type here" id="tiep"></a>
 </div>  
 <br>  
-<div id='msect'>
-<br>  
-<div id='msect'>
-  <div class='divstijl' style='height:84vh; border:1px solid; padding-left:10px;'>
+  <div class='divstl'>
   <table id='tekstveld'></table>
   </div>
  </div>
 
 <script>
   var field = document.getElementById('tekstveld');
-  //var gateway = `ws://${window.location.hostname}/ws`;
   var gateway = `${(window.location.protocol == "https:"?"wss":"ws")}://${window.location.hostname}/ws`;
   var websocket;
   var inputField = document.getElementById('tiep');
@@ -69,7 +72,7 @@ document.getElementById("help").style.display = "none";
   function confirmExit()
   {
       alert("close the console?");
-      ws:close();  
+      ws.close();  
   }  
   
   window.addEventListener('load', onLoad);
@@ -124,17 +127,15 @@ document.getElementById("help").style.display = "none";
 
 function disConnect() {
   alert("close the console");
-  ws:close();
-  window.location.href='/MENU';   
+  ws.close(); 
 }
 </script>
 </body>
 </html>
 )=====";
 
-
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  diagNose = 1;
+  diagNose = true;
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
 
   for(int i=0; i<len; i++ ) 
@@ -158,13 +159,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
           } else 
 
           // see files
-           if (strncasecmp(txBuffer,"PRINTOUT-SPIFFS=" , 16) == 0) {  
+           if (strcasecmp(txBuffer,"PRINT-SPIFFS") == 0) {  
               //we do this in the loop
-               char *valueStr = txBuffer + 16;
-
-              int month = atoi(valueStr);
-              String bestand = "//mvalues_" + String(month) + ".str"; // month5.str
-              printStruct( bestand, month ); 
+              actionFlag = 46;
               return;             
           
           } else 
@@ -174,12 +171,20 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               return;             
           } else           
           
-           if (strncasecmp(txBuffer,"DELETE-FILE=",12) == 0) {  
+          if (strncasecmp(txBuffer,"DELETE-FILE=",12) == 0)
+          {  
               //input can be DELETE-FILE=filename
               ws.textAll("len = " + String(len));
-              String bestand="";
-              for(int i=12;  i<len+1; i++) { bestand += String(txBuffer[i]); }
+              String rawInput = String(txBuffer);
+              String bestand = rawInput.substring(12);
+              bestand.trim();
+              //String bestand="";
+              //for(int i=12;  i<len+1; i++) { bestand += String(txBuffer[i]); }
                ws.textAll("bestand = " + bestand); 
+               //const char* testBestand = "/mvalues_8.str";
+               //SPIFFS.remove(testBestand)
+               
+                           
               if (SPIFFS.exists(bestand)) 
               {
                   ws.textAll("going to delete file " + bestand); 
@@ -192,7 +197,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               { 
                  ws.textAll("no such file, forgot the / ??");
               }
-              return;                      
+              return;                        
  
           } else
 

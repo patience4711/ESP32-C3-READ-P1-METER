@@ -46,6 +46,7 @@ const char BASISCONFIG[] PROGMEM = R"=====(
   <tr><td>rx invert:<td><input type='checkbox' style='width:30px; height:30px;' name='rxi' #sjik ></input></td></tr>
   
   <tr><td class="cap">auto polling freq<td><select name='pfreq' class='sb1' id='sel2'>
+  <option value='0'>no polling</option>
   <option value='3'>on demand 3</option>
   <option value='4'>on demand 4</option>
   <option value='5'>on demand 5</option>

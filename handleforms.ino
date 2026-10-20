@@ -44,15 +44,15 @@ void handleForms(AsyncWebServerRequest *request) {
     
       if(request->hasParam("econht")) {
         // received the setvalues form  names are econht, econlt eretht, eretlt, mnr
-        int mth = request->getParam("mnr")->value().toInt();
+        int mth = request->arg("mnr").toInt();
         
-        MVALS[mth].EC_HT = request->getParam("econht")->value().toFloat();
-        MVALS[mth].EC_LT = request->getParam("econlt")->value().toFloat();
-        MVALS[mth].ER_HT = request->getParam("eretht")->value().toFloat();
-        MVALS[mth].ER_LT = request->getParam("eretlt")->value().toFloat();
-        MVALS[mth].mGAS = request->getParam("mGas")->value().toFloat();
-        String bestand = "/mvalues_" + String(mth) + ".str"; // month5.str
-        writeStruct(bestand, mth);
+        MVALS[mth].EC_HT = request->arg("econht").toFloat();
+        MVALS[mth].EC_LT = request->arg("econlt").toFloat();
+        MVALS[mth].ER_HT = request->arg("eretht").toFloat();
+        MVALS[mth].ER_LT = request->arg("eretlt").toFloat();
+        MVALS[mth].mGAS  = request->arg("mGas").toFloat();
+
+        writeMonths();
         return;
      } else
      

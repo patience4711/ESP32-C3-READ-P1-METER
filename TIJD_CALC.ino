@@ -7,78 +7,50 @@ void sun_setrise() {
     
     sunMoon  sm;
 
-//  tmElements_t  tm;                             // specific time
-//  tm.Second = 0;
-//  tm.Minute = 12;
-//  tm.Hour   = 12;
-//  tm.Day    = 3;
-//  tm.Month  = 8;
-//  tm.Year   = 2016 - 1970;
-//  time_t s_date = makeTime(tm);
-//  Serial.println("RTC has set the system time");
-  sm.init(OUR_timezone, OUR_latitude, OUR_longtitude);
-
-
-//  uint32_t jDay = sm.julianDay();               // Optional call
-//  mDay = sm.moonDay();
-// if (mDay < 13){ maan = "cresc. moon";} //crescent moon"
-// if (mDay > 15){maan = "waning moon";}
-// if (mDay == 13 || mDay == 14 || mDay == 15){maan = "full moon";}
-// if (mDay == 0 || mDay == 1 || mDay == 28){maan = "new moon";} 
-
-      time_t sunrise = sm.sunRise();
-      time_t sunset  = sm.sunSet();
+    sm.init(OUR_timezone, OUR_latitude, OUR_longtitude);
+    time_t sunrise = sm.sunRise();
+    time_t sunset  = sm.sunSet();
       
-      if ( zomerTijd ) { // er is zomertijd ingesteld
-            if (zomertijd() == true) { // we kijken of het zomertijd is
-              sunrise = sunrise + 3600; // seconden
-              sunset  = sunset + 3600;
-              dst = 1; //summer time
-              } else {
-              dst = 2; // winter time 
-              }
-       } else { 
-           dst = 0; 
-           }
+    if ( zomerTijd ) { // er is zomertijd ingesteld
+          if (zomertijd() == true) { // we kijken of het zomertijd is
+            sunrise = sunrise + 3600; // seconden
+            sunset  = sunset + 3600;
+            dst = 1; //summer time
+            } else {
+            dst = 2; // winter time 
+            }
+    } else { 
+            dst = 0; 
+    }
  }
 
 
 // *********** this function determines if dts applies
 bool zomertijd() {
+    int m = month();
+    int d = day();
 
-    int eerstemrt = dow(year(), 3 ,1);
-    int zdmrt;
+    // Shortcut: November to February is guaranteed wintertime
+    // April t/m September is guaranteed summertime
+    if (m < 3 || m > 10) return false;
+    if (m > 3 && m < 10) return true;
 
-    if (eerstemrt == 0) {
-     zdmrt = 1;
-    } else {
-     zdmrt = 1 + (7 - eerstemrt);
+    // We only need to caclculate March (3) and Oct (10)!
+    int j = year();
+    
+    if (m == 3) {
+        // Direct formula for the last sunday in march
+        int lastSundayMarch = 31 - dow(j, 3, 31);
+        return d >= lastSundayMarch; // true or false
+    }
+    
+    if (m == 10) {
+        // Direct formula for the last sunday in oct
+        int lastSundayOct = 31 - dow(j, 10, 31);
+        return d < lastSundayOct; // true or false
     }
 
-    while(zdmrt <= 24){
-      zdmrt = zdmrt + 7;
-    }
-
-    int eersteoct = dow(year(), 10 ,1);
-    int zdoct ;
-
-    // dow goes from 0 to 6, sunday is 0
-    if (zdoct == 0) {
-    zdoct = 1;
-    } else {
-    zdoct = 1+(7-eersteoct);
-    }
-    while(zdoct <= 24){
-      zdoct = zdoct + 7;
-    }
-
-    if(((month() == 3 and day() >= zdmrt) or month() > 3) and ((month() == 10 and day() < zdoct) or month() < 10)) {  
-
-    return true;
-    } else {
-
-    return false; 
-    }
+    return false;
 }
 
 int dow(int y, int m, int d) {
@@ -87,25 +59,4 @@ y -= m < 3;
 return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
 }
 
-//void tijd_convert () {
-//
-//}
-//// een universele funtie om het aantal uren en minuten uit de char in een string te zetten
-//// als wat true dan geeft ie de uren en anders de minuut
-//int tijd_cvrt(char TIJD[6], bool wat) {
-//     int uur = 0;
-//     for (int i = 0; i < 2; i++) {
-//          char c = TIJD[i];
-//               if (c < '0' || c > '9') break;
-//               uur *= 10;
-//               uur += (c - '0');
-//          }
-//     int minuut = 0;
-//     for (int i = 3; i < 5; i++) { // 2 = de :
-//          char c = TIJD[i];
-//               if (c < '0' || c > '9') break;
-//               minuut *= 10;
-//               minuut += (c - '0');
-//          }
-//if (wat) { return uur; } else { return minuut;}
-//}
+

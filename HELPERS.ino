@@ -159,9 +159,10 @@ void showDir() {
     File root = SPIFFS.open("/");
     File file = root.openNextFile();
     while (file) {
-          sprintf(temp, "%s  size %u<br>" , file.name(), file.size() );
+          String realName = String(file.path());
+          sprintf(temp, "%s  size %u<br>", realName.c_str(), file.size());
           ws.textAll(String(temp));
-          delay(100);
+          delay(50);
           file = root.openNextFile();
     }
  }
@@ -181,16 +182,16 @@ void showDir() {
         Serial.println("meter.gas = " + String(meter.gas));     
 }
 
-void writeMonth(int maand) {
-  //so if month overflew, the value of end 7 is in 8
-//month goes from 1 - 12 buth the struct from 0 - 12
-// we write all values in the struct with the number of current month -1
-   MVALS[maand].EC_LT = meter.con_lt ;
-   MVALS[maand].EC_HT = meter.con_ht ;
-   MVALS[maand].ER_LT = meter.ret_lt ;
-   MVALS[maand].ER_HT = meter.ret_ht ;
-   MVALS[maand].mGAS    = meter.gas;
-// write this in SPIFFS
-   String bestand = "/mvalues_" + String(maand) + ".str"; // month5.str
-   writeStruct(bestand, maand);
-} 
+// void writeMonth(int maand) {
+//   //so if month overflew, the value of end 7 is in 8
+// //month goes from 1 - 12 buth the struct from 0 - 12
+// // we write all values in the struct with the number of current month -1
+//    MVALS[maand].EC_LT = meter.con_lt ;
+//    MVALS[maand].EC_HT = meter.con_ht ;
+//    MVALS[maand].ER_LT = meter.ret_lt ;
+//    MVALS[maand].ER_HT = meter.ret_ht ;
+//    MVALS[maand].mGAS    = meter.gas;
+// // write this in SPIFFS
+//    String bestand = "/mvalues_" + String(maand) + ".str"; // month5.str
+//    writeStruct(bestand, maand);
+// } 
