@@ -2,6 +2,10 @@
 
 Just like the HomeWizzard p1 dongle, the purpose of this project is to read data from a so called smart meter (e.g. model Sagecom 210 ESMR5) via its serial port. All we have to do is connect an ESP32C3 device (tested with ESP32C3-super mini) via an rj11 cable to the serial port of the meter. The data is made available via mosquitto or an API and is also displayed on a webpage.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>The API is compatible with the p1 dongle from HomeWizzard. To get data, the api is http://ip_of_p1meter/api/v1/data. If you want simple data f.i. for a solar diverter: http://ip_of_p1meter/api/v1/simple 
 
+# test results
+I runned a test to retrieve the heavy /api/v1/data json every three seconds, the esp keeps up hours an hours.
+This means that demanding clients like a battery that wants 'real-time' data can be served.
+
 ![frontpage](https://github.com/patience4711/ESP-READ-P1-METER/assets/12282915/bb65cf1f-f6bf-4e1c-ae48-c379628f3a7a)<br>
 
 I know this has been done before but not this project has more features. The ESP32C3 can be fed with the 5v of the meter. Since i have other projects which partially use the same software, it is only a small step to adapt it to a new function. So it inherits many nice features from the other projects. 
@@ -28,7 +32,7 @@ You can use the provided binary but if you must compile it yourself: Use arduino
 
 ## downloads
 oct 20 2026: There is a new version available.<br> 
-Download [ESP32-C3-P1METER-v0_4]https://github.com/patience4711/ESP32-C3-READ-P1-METER/blob/main/ESP32C3_P1METER_v0_4.ino.bin)<br>
+Download [ESP32-C3-P1METER-v0_5](https://github.com/patience4711/ESP32-C3-READ-P1-METER/blob/main/ESP32C3_P1METER_v0_5.ino.bin)<br>
 
 ## features
 - Simply to connect to your wifi
@@ -56,6 +60,11 @@ The program makes rx high and pulls-up the tx, next reads the serial port until 
 Next the checksum calculation is done and when the char array is approved, the interesting values can be extracted.
 
 ## changelog ##
+version esp32-C3-P1METER-V0_5
+- added methods to edit the monthly values.
+- moved the saving of values from spiffs to preferences.
+- extended the options for pollFequency.
+- solved some bugs.
 version ESP32-C3-P1METER-v0_4
 - made suitable for high frequency polling (on demand by f.i. a battery)
 - renewed the parsing of the telegram
