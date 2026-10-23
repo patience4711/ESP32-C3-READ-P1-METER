@@ -239,7 +239,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
                 ws.textAll("read duration: " + String(readDurationMs) + " ms");
                 //ws.textAll("decode duration: " + String(decodeDurationMs) + " ms");
                 //ws.textAll("parse duration: " + String(parseDurationMs) + " ms");
-                ws.textAll("api duration: " + String(apiDurationMs) + " ms");
+                //ws.textAll("api duration: " + String(apiDurationMs) + " ms");
           } else 
 
           if (strcasecmp(txBuffer, "POLL-METER") == 0) 

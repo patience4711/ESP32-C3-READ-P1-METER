@@ -7,18 +7,18 @@ server.on("/api/v1/data", HTTP_GET, [&](AsyncWebServerRequest *request) {
     if(ledSignal) my_wifiConnect.ledOn(255,0,0);
     if (templateMade) {
         
-        // 1. Bereken de netto live-waarden per fase
+        //calculate the netto live-values per phase
         int pwr_l1 = (int)meter.pwr_con[0] - (int)meter.pwr_ret[0];
         int pwr_l2 = (int)meter.pwr_con[1] - (int)meter.pwr_ret[1];
         int pwr_l3 = (int)meter.pwr_con[2] - (int)meter.pwr_ret[2];
         int total_pwr = pwr_l1 + pwr_l2 + pwr_l3;
 
-        // 2. Bepaal waar jsonPart1 eindigt
+        // determine where the char ends
         size_t index = strlen(jsonApi);
 
-        // 3. Schrijf de live data DIRECT aan het einde van de char-array
-        // We gebruiken 'jsonPart1 + index' om de pointer exact op de lege plek te zetten.
-        // We bewaken streng de resterende ruimte met 'sizeof(jsonPart1) - index'.
+        //add the live data DIRECT to the and of the char
+        // we use jsonApi + index' to put the pointer to the right ploace.
+        // We gard strictly the spare space with (jsonApi) - index'.
         snprintf(jsonApi + index, sizeof(jsonApi) - index,
             "  \"active_power_w\": %d,\n"
             "  \"active_power_l1_w\": %d,\n"
@@ -27,14 +27,13 @@ server.on("/api/v1/data", HTTP_GET, [&](AsyncWebServerRequest *request) {
             "}",
             total_pwr, pwr_l1, pwr_l2, pwr_l3
         );
-        // 4. Zend de resulterende char-array direct uit (0% String overhead!)
+        // send de resulting char-array  (0% String overhead!)
         request->send(200, "application/json", jsonApi);
 
-        // 5. CRUCIAAL: Herstel jsonPart1 direct weer naar zijn schone 'open' status!
-        // We zetten de null-terminator terug op de oorspronkelijke plek, 
-        // zodat de live-data van de volgende request er niet achteraan wordt geplakt.
+        // CRUCIAL: restore jsonApi direct to the original state!
+        // We put the null-terminator back to the original place, 
+        // so that the live-data of the next poll on the richt index is placed.
         jsonApi[index] = '\0';
-        //apiDurationMs = millis() - startAPI;
 
      } else {
         request->send(503, "text/plain", "meter not polled yet...");
@@ -46,16 +45,29 @@ server.on("/api/v1/data", HTTP_GET, [&](AsyncWebServerRequest *request) {
 
 
 server.on("/api/v1/power", HTTP_GET, [](AsyncWebServerRequest *request) {
-
+char json[120];
+    
     AsyncResponseStream *response = request->beginResponseStream("application/json");
-    //StaticJsonDocument<160> doc; //(160);
-    // the length = 17*2 + 10*2 = 52
+        //calculate the netto live-values per phase
+        int pwr_l1 = (int)meter.pwr_con[0] - (int)meter.pwr_ret[0];
+        int pwr_l2 = (int)meter.pwr_con[1] - (int)meter.pwr_ret[1];
+        int pwr_l3 = (int)meter.pwr_con[2] - (int)meter.pwr_ret[2];
+        int total_pwr = pwr_l1 + pwr_l2 + pwr_l3;
 
-    JsonDocument root;
-    root["active_power_w"]    = (unsigned int)meter.pwr_con; //else root["pac"] = "n/a";
-    root["active_power_l1_w"] = (unsigned int)meter.pwr_ret; //else root["par"] = "n/a";
-    serializeJson(root, * response);
-    request->send(response);
+    
+    snprintf(json, sizeof(json),
+        "{\"active_power_w\": %d,\n"
+        "  \"active_power_l1_w\": %d,\n"
+        "  \"active_power_l2_w\": %d,\n"
+        "  \"active_power_l3_w\": %d\n"
+        "}",
+        total_pwr, pwr_l1, pwr_l2, pwr_l3
+    );
+    
+    //JsonDocument root;
+    //root["active_power_w"]    = (unsigned int)meter.pwr_con; //else root["pac"] = "n/a";
+    //root["active_power_l1_w"] = (unsigned int)meter.pwr_ret; //else root["par"] = "n/a";
+    request->send(200, "application/json", json);
 });
 
 server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
