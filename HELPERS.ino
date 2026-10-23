@@ -72,10 +72,16 @@ consoleOut("performing loopback test on uart0");
 // function to show debug info
 void consoleOut(String toLog) {
 // decide to log to serial or the console 
-  if(diagNose) 
-  {
-    Serial.println(toLog);
-  } 
+  switch(diagNose) {
+      case 0:
+        break;
+      case 1:
+        ws.textAll(toLog);
+        break;
+      case 2:
+      Serial.println(toLog);
+  }  
+
 }
 
 void loginBoth(AsyncWebServerRequest *request, String who) {
@@ -143,9 +149,10 @@ void empty_serial() { // remove any remaining data in serial buffer
 }
 
 void empty_Serial1() { // remove any remaining data in serial buffer
-  while(Serial1.available()) {
-    Serial1.read();
-  }
+  while (Serial1.read() >= 0);
+  //while(Serial1.available()) {
+ //   Serial1.read();
+ // }
 }
 //File file = root.openNextFile();
 //          int total = 0;

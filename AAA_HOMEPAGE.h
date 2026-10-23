@@ -1,3 +1,5 @@
+
+// from row 113 <script type="text/javascript" src="SECURITY"></script>
 const char P1_HOMEPAGE[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head>
 
@@ -110,7 +112,7 @@ tr {height:35px;}
 }
 </style>
 
-<script type="text/javascript" src="SECURITY"></script>
+
 </head>
 
 <body onload='loadScript()'>
@@ -232,12 +234,11 @@ function hidePopup(a) {
    //setTimeout(init,0);
    }
 
-window.addEventListener('visibilitychange', () =>{
+window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-    //window.location.reload();}
-    getData();
+       getData();
     }
-})
+});
 
 function celbgc(cel) {
      document.getElementById(cel).style = "background-color:#c6ff1a";  
@@ -316,6 +317,7 @@ function getData() {
       document.getElementById("time").innerHTML = obj.timestamp;
       }
   }
+  
   xhttp.open("GET", "/get.Data", true);
   xhttp.send();
 }

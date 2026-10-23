@@ -8,118 +8,149 @@
  * and send via mosquitto
  */
 
-void meterPoll() {
+void meterPoll(bool fastPoll) {
+#ifdef TESTCONFIG
+// do a fakePoll
+consoleOut("doing a fakePoll");
+   fakePoll(fastPoll);
+   if(! fastPoll) {
+     // we did a slow poll so we need to send an event
+     consoleOut("complete fakePoll");
+     eventSend(2);
+   } else {
+     consoleOut("fast fakePoll");
+   }
+   consoleOut("templateMade = " + String(templateMade));
+   polled=true;
+   sprintf( timeStamp, "%02d/%02d %02d:%02d:%02d", day(), month(), hour(), minute(), second() );
+   return;
+#endif       
 // To trigger the poll we only have to put P1_ENABLE HIGH. The meter then sends telegrams, we just pick one 
-   consoleOut("polling the meter");
+   unsigned long startPolling = millis();
 
    // the rxpin on the meter should be pulled high, we do this with pin gpio5  (P1_ENABLE) 
   digitalWrite(P1_ENABLE, HIGH); 
    if( read_into_array() ) 
    {
-      //we have a telegram
-      if(ledSignal) my_wifiConnect.ledBlink(255,0,0,3,300);
+      //we have a telegram and can analyse it
+      //if there is no telegram, no ledsignal
+      if(ledSignal) my_wifiConnect.ledOn(50,0,0);
       digitalWrite(P1_ENABLE, LOW);
-      //if(bootTest) 
-      // {
-      //   // if we are testing we only want to know whether there is a telegram received
-      //   // so we do not decode it but return  
-      //   if(strlen(teleGram) > 50)
-      //   {
-      //      strcat(teleGram, "\n this is a test telegram, retrieved at boot");
-      //      testFilesave();
-      //      consoleOut("saved a test telegram");
-      //   } else {
-      //      strcpy(teleGram, "test at boot failed");
-      //      consoleOut("test telegram failed");
-      //   }
-
-      //   consoleOut("performed the bootTest");
-      //   return;
-      // }
-      // when we are not testing we decode the telegram
-      decodeTelegram(); 
-      sendMqtt(false);
-      sendMqtt(true);
+      polled = true;
+      //we decode the telegram
+      decodeTelegram(fastPoll); 
+      sprintf( timeStamp, "%02d/%02d %02d:%02d:%02d", day(), month(), hour(), minute(), second() );
+      if(Mqtt_Format != 0) {
+         sendMqtt(false);
+         sendMqtt(true);
+      }
+      if(fastPoll == false) {
+        makeJsonTemplateHW();
+        makeJsonTemplateWU();
+        eventSend(2);
+         consoleOut("did a complete Poll * * * * * * * * * * * *");
+      } else {
+         consoleOut("did a fastPoll"); 
+      }  //fastPoll = true;
+      
+      pollDurationMs = millis() - startPolling;
+      //pollCounter ++;
     } else {
     //when we are here nothing was received
      consoleOut("no telegram received");
-    //if(testPoll) strcpy(teleGram, "testPoll at boot failed");
-    //return;
     }
-
-    consoleOut("meterPoll done");
-   digitalWrite(P1_ENABLE, LOW);
+     if(ledSignal) my_wifiConnect.ledOff();
+     consoleOut("meterPoll done");
+     digitalWrite(P1_ENABLE, LOW);
 }
 
-bool read_into_array() {
-    int byteCounter = 0;
-    char rep[20]={0};
-    char inByte[2];
-    int Bytes=0;
-    polled = false;
-    // start waiting until serial1 available   
-    waitSerial1Available(maxTry);
-    // flush the serial1 buffer so that we start reading at the beginning of the telegram    
-    empty_Serial1();
-    // now we wait again until something is avialable
-    if ( waitSerial1Available(maxTry) ) {
 
+
+// werkende versie
+bool read_into_array() 
+{
+ unsigned long startReading = millis();   
+    int byteCounter = 0;
+    //int maxTry = 1;
+    polled = false;
+    //Serial1.setTimeout
+    //if (fastPoll == false) maxTry = 5;
+    
+    // Start wachten tot Serial1 beschikbaar is
+    //waitSerial1Available(3);
+    //empty_Serial1(); // Flush de oude buffer
+    
+    if (waitSerial1Available(3)) 
+    {
         memset(teleGram, 0, sizeof(teleGram));
         delayMicroseconds(250);
-        Serial.println("available on Serial1 : " + String(Serial1.available()));
-        while (Serial1.available())
+        
+        unsigned long startTijdLus = millis();
+        bool startGevonden = false;
+        int x = 0;
+
+        // Oneindige lus totdat het telegram compleet is of we een timeout krijgen (max 150ms)
+
+        while (millis() - startTijdLus < 150) 
         {
-              Serial1.readBytes(inByte, 1);
-              // we keep reading until we find the startsign "/"
-//              if(diagNose){
-//                  if(byteCounter < 7) { 
-//                       Serial.println("print the 1st 7 bytes");
-//                       Serial.print(inByte[0]);
-//                  }
-//              }
-              byteCounter ++;
-              if (inByte[0] == '/') { 
-                     consoleOut("\nfound start at " + String(byteCounter));
-                    
-                    // add this byte to teleGram 
-                    strncat(teleGram, inByte, 1); 
-                    // now we add the next 750 bytes to teleGram 
-                    // until we encounter the endsign
-                    for ( int x=0; x < 750; x++) {
-                       Serial1.readBytes(inByte, 1);
-                       strncat( teleGram, inByte, 1);
-                       // catch the endsign
-                       if (inByte[0] == '!' ) {
-                            consoleOut("found the end sign");
+            if (Serial1.available() > 0) 
+            {
+                char c = Serial1.read();
+                byteCounter++;
 
-                           // we need to read 4 more bytes (the crc) until the \n and then stop
-                           Serial1.readBytes(readCRC, 4);
-                           strcat(teleGram, readCRC);
-                           polled = true;
-                           return true;
-                        }   
-                     }
-               // if we are here, we have read 650 characters but no endsign found
-                consoleOut("no endsign found");
-               return false;              
-           }
+                if (!startGevonden) {
+                    if (c == '/') {
+                        startGevonden = true;
+                        teleGram[0] = c;
+                        //teleGram[1] = '\0';
+                        x = 1;
+                        consoleOut("\nfound start at " + String(byteCounter));
+                    }
+                } 
+                else // We zijn het telegram aan het vullen
+                {
+                    if (x < 1499) {
+                        teleGram[x] = c;
+                        //teleGram[x + 1] = '\0';
+                        x++;
+                    }
 
-       // we terminate if more than 2000 bytes read
-       if ( byteCounter > 2000 ) {
-             consoleOut("byteCounter over 2000");
-            return false;       
-           }
+                    // Catch the endsign
+                    if (c == '!') {
+                        consoleOut("found the end sign");
+                        
+                        // Lees direct de 4 CRC bytes die er direct achteraan rollen
+                        int crcIdx = 0;
+                        unsigned long crcWait = millis();
+                        // Heel even kort wachten tot de allerlaatste 4 bytes binnenvallen
+                        while(Serial1.available() < 4 && (millis() - crcWait < 20)) {  }
+                        
+                        while (Serial1.available() > 0 && crcIdx < 4) {
+                            readCRC[crcIdx] = Serial1.read();
+                            crcIdx++;
+                        }
+                        readCRC[crcIdx] = '\0';
+                        
+                        strcat(teleGram, readCRC);
+                        polled = true;
+                        readDurationMs = millis() - startReading;
+                        return true;
+                    }
+                
+                    if (byteCounter > 2000) {
+                        consoleOut("byteCounter over 2000");
+                        return false;
+                    }
+                }
+            }
         }
-   // if we are here, no startssign was found    
-       consoleOut("no startsign found");
-      return false;
-   }
+    }
+    consoleOut("got no data from serial1");
+    return false;
+}
 
-  
-  // if we are here, no serial data was available
-   consoleOut("got no data from serial1");
-  return false;
-}   
+
+
 
 bool waitSerial1Available(int howMany) // wait untill something 's available
 {
@@ -140,49 +171,56 @@ consoleOut("waitSerial1Available");
   return false;
 }
 
-void decodeTelegram() {
+void decodeTelegram(bool fast) {
 /* this function processes the read telegram
  *  first the crc is calculated and compared
  *  if crc is approved we extract the data from the telegram
  */
       if (polled) {
+        //unsigned long startDecode = millis();
         //we have a valid telegram, now we can decode it.
-        //if no testfile, we write that first
-        // before the teleGram is modyfied
-//        if( !SPIFFS.exists("/testFile.txt")) {
-//            testFilesave(); // an existing file is not overwritten
-//        }
+
          int lengte = strlen(teleGram);
           consoleOut("teleGram length = " + String(lengte));
          
          // the crc = calculated over the telegram inc start and endsign, so without crc
          // the teleGram contains the CRC so we terminate teleGram after the !
          teleGram[lengte - 4] = '\0';
-         // now the teleGram is useless for testdecode so:
-         //testTelegram = false;
-         int calculatedCRC = CRC16(0x0000, (unsigned char *) teleGram, lengte-4); 
-         
-          consoleOut("the calculated crc = " + String(calculatedCRC));
-      
-          consoleOut("strol of readCRC = " + String(strtol(readCRC, NULL, 16))); //8F46
-    
-        if(strtol(readCRC, NULL, 16) == calculatedCRC) //do the crc's match
-        {
-            consoleOut("crc is correct, now extract values..");
-            parseTelegram();   
-            polled = true;
-            eventSend(2); // inform the webbpage that there is new data
-            consoleOut("polled true");
-            // set the timestamp
-            sprintf( timeStamp, "%02d/%02d %02d:%02d:%02d", day(), month(), hour(), minute(), second() );
-            return;
-        } else {
-             consoleOut("crc is wrong, not processed..");
-            //failCount++;
-            polled=false;
-             consoleOut("not polled");
-            return;
-        }
+
+         // this part is used to do the crc check, we can skip that when we are in the fast modus
+         if(fast == false)
+         {
+            int calculatedCRC = CRC16(0x0000, (unsigned char *) teleGram, lengte-4); 
+            
+              consoleOut("the calculated crc = " + String(calculatedCRC));
+          
+              consoleOut("strol of readCRC = " + String(strtol(readCRC, NULL, 16))); //8F46
+        
+            if(strtol(readCRC, NULL, 16) == calculatedCRC) //do the crc's match
+            {
+                consoleOut("crc is correct, now extract values..");
+                parseTelegram(fast);   
+                polled = true;
+                
+                consoleOut("polled true");
+                //decodeDurationMs = millis() - startDecode;
+                return;
+            } else {
+                consoleOut("crc is wrong, not processed..");
+                //failCount++;
+                polled=false;
+                consoleOut("not polled");
+                return;
+            }
+         } else {
+                // do this without crc
+                parseTelegram(fast);   
+                polled = true;
+                //eventSend(2); // inform the webbpage that there is new data
+                consoleOut("polled true");
+                //decodeDurationMs = millis() - startDecode;
+                return;
+         }  
     }
     
 }

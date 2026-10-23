@@ -13,7 +13,7 @@ void handle_Serial () {
     }
 
 // now we know there are at least 13 bytes so we read them
- diagNose = 2; //direct output to serial
+ if (diagNose != 0) diagNose = 2; //direct output to serial
  while(Serial.available()) {
              SerialInByte=Serial.read(); 
              //Serial.print("+");
@@ -40,7 +40,7 @@ void handle_Serial () {
               Serial.println(F("PRINTOUT-SPIFFS"));
               Serial.println(F("METERPOLL-TEST;"));
               Serial.println(F("DELETE-FILE=filename; (delete a file)")); 
-              Serial.println(F("WRITE-MONTH=; (edit monthly values)"));  
+              //Serial.println(F("WRITE-MONTH=; (edit monthly values)"));  
               return;
     } else 
 
@@ -52,50 +52,50 @@ void handle_Serial () {
    // 
 
    
-   if (strncasecmp(InputBuffer_Serial, "WRITE-MONTH=" , 12) == 0) 
-   { 
-        // the buffer could be something like WRITE-MONTH={"CON_LT":12.34, "CON_HT":56.567, etc}
-        // Pointer to JSON start (after '=')
-        char *json = strchr(InputBuffer_Serial, '=');
-        if (!json) {
-            Serial.println("No '=' found");
-            return;
-          }
-        json++;  // move past '='
+  //  if (strncasecmp(InputBuffer_Serial, "WRITE-MONTH=" , 12) == 0) 
+  //  { 
+  //       // the buffer could be something like WRITE-MONTH={"CON_LT":12.34, "CON_HT":56.567, etc}
+  //       // Pointer to JSON start (after '=')
+  //       char *json = strchr(InputBuffer_Serial, '=');
+  //       if (!json) {
+  //           Serial.println("No '=' found");
+  //           return;
+  //         }
+  //       json++;  // move past '='
           
-          JsonDocument doc;
-          DeserializationError error = deserializeJson(doc, json);
+  //         JsonDocument doc;
+  //         DeserializationError error = deserializeJson(doc, json);
 
-          if (error) {
-            Serial.print("JSON error: ");
-            Serial.println(error.f_str());
-            return;
-          }
+  //         if (error) {
+  //           Serial.print("JSON error: ");
+  //           Serial.println(error.f_str());
+  //           return;
+  //         }
       
-          int month = doc["month"];
+  //         int month = doc["month"];
          
-          MVALS[month].EC_LT = doc["CON_LT"];
-          MVALS[month].EC_HT = doc["CON_HT"];
-          MVALS[month].ER_LT = doc["RET_LT"];
-          MVALS[month].ER_HT = doc["RET_HT"];
-          MVALS[month].mGAS =  doc["GAS"];
+  //         MVALS[month].EC_LT = doc["CON_LT"];
+  //         MVALS[month].EC_HT = doc["CON_HT"];
+  //         MVALS[month].ER_LT = doc["RET_LT"];
+  //         MVALS[month].ER_HT = doc["RET_HT"];
+  //         MVALS[month].mGAS =  doc["GAS"];
       
-            // write this in SPIFFS
-          String bestand = "//mvalues_" + String(month) + ".str"; // month5.str
-          writeStruct(bestand, month);
-          Serial.println("confirm content " + bestand);
-          printStruct( bestand, month ); 
-          // // setup a struct for the values of each month
-          // typedef struct{
-          //   float EC_LT = 0;
-          //   float EC_HT = 0;
-          //   float ER_LT = 0;
-          //   float ER_HT = 0;
-          //   float mGAS  = 0;
-          // } m_values; 
-          // m_values MVALS[13]; 
-       return;
-    } else   
+  //           // write this in SPIFFS
+  //         String bestand = "//mvalues_" + String(month) + ".str"; // month5.str
+  //         writeStruct(bestand, month);
+  //         Serial.println("confirm content " + bestand);
+  //         printStruct( bestand, month ); 
+  //         // // setup a struct for the values of each month
+  //         // typedef struct{
+  //         //   float EC_LT = 0;
+  //         //   float EC_HT = 0;
+  //         //   float ER_LT = 0;
+  //         //   float ER_HT = 0;
+  //         //   float mGAS  = 0;
+  //         // } m_values; 
+  //         // m_values MVALS[13]; 
+  //      return;
+  //   } else   
    
    
     if (strcasecmp(InputBuffer_Serial, "METERPOLL-TEST") == 0) {  

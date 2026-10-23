@@ -41,7 +41,7 @@
 
     if (actionFlag == 26) { //polling
       actionFlag = 0; //reset the actionflag
-      meterPoll(); // read and decode the telegram
+      meterPoll(false); // read and decode the telegram
       sendMqtt(false);
       sendMqtt(true); //gas
     }    

@@ -47,7 +47,9 @@ document.getElementById("hulp").style.display = "none";
   <b>DELETE-FILE=/filename: </b> delete a file.<br><br>
   <b>POLL-METER: </b> poll the p1 meter now <br><br>
   <b>TEST-MOSQUITTO: </b>sends a mqtt testmessage<br><br>
-  <b>CLEAR-CONSOLE: </b> clear console window<br><br> 
+  <b>DUMP-VARS: </b>show some system variables<br><br>
+  <b>CLEAR-CONSOLE: </b> clear console window<br><br>
+
   </div>
 
 <div id='msect'>
@@ -68,6 +70,32 @@ document.getElementById("hulp").style.display = "none";
   var websocket;
   var inputField = document.getElementById('tiep');
 
+ 
+ let lastInput = ""; 
+
+  // listen to the submit (e.g. enter)
+  inputField.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+          if (inputField.value.trim() !== "") {
+              lastInput = inputField.value; // save the input in memory
+          }
+      }
+  });
+
+  // listen to the arrow_up button
+  inputField.addEventListener("keydown", function(event) {
+      if (event.key === "ArrowUp") {
+          if (lastInput !== "") {
+              event.preventDefault(); // prevent that the cursor jumps to the begin of the row
+              inputField.value = lastInput; // put the previous text back
+          }
+      }
+  });
+ 
+ 
+ 
+ 
+ 
   window.onbeforeunload = confirmExit;
   function confirmExit()
   {
@@ -135,7 +163,7 @@ function disConnect() {
 )=====";
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  diagNose = true;
+  if (diagNose != 0) diagNose = 1;
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
 
   for(int i=0; i<len; i++ ) 
@@ -201,12 +229,25 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
  
           } else
 
-      if (strcasecmp(txBuffer, "POLL-METER") == 0) 
-      {
-          actionFlag = 26;
-          ws.textAll("going to poll the meter") ;  
-     
-      } else {      
+          if (strcasecmp(txBuffer, "DUMP-VARS") == 0) 
+            {   
+                ws.textAll("templateMade =" + String(templateMade)) ;  
+                //ws.textAll("fastPoll = " + String(fastPoll)) ;
+                ws.textAll("pollFreq = " + String(pollFreq)) ;
+                ws.textAll("pollCounter = " + String(pollCounter)) ;
+                ws.textAll("poll duration: " + String(pollDurationMs) + " ms");
+                ws.textAll("read duration: " + String(readDurationMs) + " ms");
+                //ws.textAll("decode duration: " + String(decodeDurationMs) + " ms");
+                //ws.textAll("parse duration: " + String(parseDurationMs) + " ms");
+                ws.textAll("api duration: " + String(apiDurationMs) + " ms");
+          } else 
+
+          if (strcasecmp(txBuffer, "POLL-METER") == 0) 
+          {
+              actionFlag = 26;
+              ws.textAll("going to poll the meter") ;  
+        
+          } else {      
       
       
        ws.textAll("unknown command"); 

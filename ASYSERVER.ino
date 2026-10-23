@@ -1,86 +1,51 @@
 void start_asyserver() {
 
-// when there is a pollfreq below 10, the meter is polled if higher then the request
-// answers with automatically polled data
-server.on("/api/v1/data", HTTP_GET, [](AsyncWebServerRequest *request)
-{
-    // this link provides the data on the api request
-    consoleOut("answer a api request");
-    // if there is a high poll frequency we poll the meter when the poll is 3, 4, 5, 6, 7 seconds old
-    if (pollFreq >= 1 && pollFreq <= 10) 
-    {
-      unsigned long currentTime = millis();
-      // Bereken de dynamische cooldown in milliseconden (bijv. 3 * 1000 = 3000ms)
-      unsigned long cooldownMs = pollFreq * 1000;
-       
-      if (currentTime - laatsteMeting > cooldownMs || laatsteMeting == 0) {
-          maxTry = 1;
-          meterPoll(); 
-          laatsteMeting = currentTime; 
-      }     
-    }
-    
-    
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    JsonDocument root; //(length current 291);
+server.on("/api/v1/data", HTTP_GET, [&](AsyncWebServerRequest *request) {
+    //unsigned long startAPI = millis();
+    consoleOut("/api/v1/data request via snprintf pointer");
    
-    root["smr_version"] = 50;
-    root["meter_model"] = String(meterType); // moet
-    root["wifi_ssid"] = WiFi.SSID();
-    root["wifi_strength"] = WiFi.RSSI();
-    root["total_power_import_t1_kwh"] = round3(meter.con_ht); // tariff 1
-    root["total_power_import_t2_kwh"] = round3(meter.con_lt); // tariff 2
-    root["total_power_export_t1_kwh"] = round3(meter.ret_ht); // tariff 1
-    root["total_power_export_t2_kwh"] = round3(meter.ret_lt); // tariff 2  
-   
-    long total_power_w = 0; // temporary power val
-    if (threePhase)
-    {
-        // 3-phase meter: calculate the sum of all 3 phases [0, 1, 2]
-        long l1_net = round0(meter.pwr_con[0] - meter.pwr_ret[0]);
-        long l2_net = round0(meter.pwr_con[1] - meter.pwr_ret[1]);
-        long l3_net = round0(meter.pwr_con[2] - meter.pwr_ret[2]);
-        // the total power is simply the addition of the power per phasee
-        total_power_w = l1_net + l2_net + l3_net;
-        // Vul de fasespecifieke JSON-velden in voor HomeWizard/Zendure
-        root["active_power_l1_w"] = l1_net;
-        root["active_power_l2_w"] = l2_net;
-        root["active_power_l3_w"] = l3_net;
-    }
-    else
-    {
-        // 1-Fase meter: only phase 1 [0] has data
-        total_power_w = round0(meter.pwr_con[0] - meter.pwr_ret[0]);
-        //with a 1-phase meter, L1 is the total
-        root["active_power_l1_w"] = total_power_w;
-        // Optional: Some systems want to see also L2 and L3 with 1-fase
-        root["active_power_l2_w"] = 0;
-        root["active_power_l3_w"] = 0;
-    }
-    // This is the main field that Zendure checks to charge / discharge the battery
-    root["active_power_w"] = total_power_w;
-    // --------------------------------------------------------
-   
-    String jsonString;
-    serializeJson(root, * response);
-    // Final heap check
-    actionFlag = 130;
-    request->send(response);  
+    if(ledSignal) my_wifiConnect.ledOn(255,0,0);
+    if (templateMade) {
+        
+        // 1. Bereken de netto live-waarden per fase
+        int pwr_l1 = (int)meter.pwr_con[0] - (int)meter.pwr_ret[0];
+        int pwr_l2 = (int)meter.pwr_con[1] - (int)meter.pwr_ret[1];
+        int pwr_l3 = (int)meter.pwr_con[2] - (int)meter.pwr_ret[2];
+        int total_pwr = pwr_l1 + pwr_l2 + pwr_l3;
+
+        // 2. Bepaal waar jsonPart1 eindigt
+        size_t index = strlen(jsonApi);
+
+        // 3. Schrijf de live data DIRECT aan het einde van de char-array
+        // We gebruiken 'jsonPart1 + index' om de pointer exact op de lege plek te zetten.
+        // We bewaken streng de resterende ruimte met 'sizeof(jsonPart1) - index'.
+        snprintf(jsonApi + index, sizeof(jsonApi) - index,
+            "  \"active_power_w\": %d,\n"
+            "  \"active_power_l1_w\": %d,\n"
+            "  \"active_power_l2_w\": %d,\n"
+            "  \"active_power_l3_w\": %d\n"
+            "}",
+            total_pwr, pwr_l1, pwr_l2, pwr_l3
+        );
+        // 4. Zend de resulterende char-array direct uit (0% String overhead!)
+        request->send(200, "application/json", jsonApi);
+
+        // 5. CRUCIAAL: Herstel jsonPart1 direct weer naar zijn schone 'open' status!
+        // We zetten de null-terminator terug op de oorspronkelijke plek, 
+        // zodat de live-data van de volgende request er niet achteraan wordt geplakt.
+        jsonApi[index] = '\0';
+        //apiDurationMs = millis() - startAPI;
+
+     } else {
+        request->send(503, "text/plain", "meter not polled yet...");
+     }
+     if(ledSignal) my_wifiConnect.ledOff();
 });
 
+
+
+
 server.on("/api/v1/power", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // if there is a high poll frequency we poll the meter when the poll is 3, 4, 5, 6, 7 seconds old
-      if (pollFreq >= 1 && pollFreq <= 10) {
-      unsigned long currentTime = millis();
-      // Bereken de dynamische cooldown in milliseconden (bijv. 3 * 1000 = 3000ms)
-      unsigned long cooldownMs = pollFreq * 1000;
-       
-      if (currentTime - laatsteMeting > cooldownMs || laatsteMeting == 0) {
-          maxTry = 1;
-          meterPoll(); 
-          laatsteMeting = currentTime; 
-      }     
-    }
 
     AsyncResponseStream *response = request->beginResponseStream("application/json");
     //StaticJsonDocument<160> doc; //(160);
@@ -94,47 +59,53 @@ server.on("/api/v1/power", HTTP_GET, [](AsyncWebServerRequest *request) {
 });
 
 server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
-// this link provides the general data on the frontpage
-    char temp[13]={0};
     uint8_t remote = 0;
-    if(checkRemote( request->client()->remoteIP().toString()) ) remote = 1; // for the menu link
+    if(checkRemote(request->client()->remoteIP().toString())) remote = 1;
 
-// {"ps":"05:27 hr","pe":"21:53 hr","cnt":3,"rm":0,"st":1,"sl":1}  length 62
-    
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    //StaticJsonDocument<160> doc; //(160);
-    JsonDocument root; //(160);
- 
-    float enReturn = meter.ret_ht + meter.ret_lt;
-    float enCons   = meter.con_ht + meter.con_lt;
-    //uint16_t Power = meter.pwr_con[0] - meter.pwr_ret[0] + meter.pwr_con[1] - meter.pwr_ret[1] + meter.pwr_con[2] - meter.pwr_ret[2];
-    
-    
-    root["timestamp"] = String(timeStamp);
+    if (templateMade) {
+        //establish where the jsonWebui Buffer currently ends
+        size_t index = strlen(jsonWebui);
 
-    root["CON_HT"] = round3(meter.con_ht);
-    root["CON_LT"] = round3(meter.con_lt); 
-    
-    root["RET_HT"] = round3(meter.ret_ht);
-    root["RET_LT"] = round3(meter.ret_lt);
-    
-    root["PWRC1"] = round0(meter.pwr_con[0]); 
-    root["PWRR1"] = round0(meter.pwr_ret[0]);
-    root["PWRC2"] = round0(meter.pwr_con[1]); 
-    root["PWRR2"] = round0(meter.pwr_ret[1]);
-    root["PWRC3"] = round0(meter.pwr_con[2]); 
-    root["PWRR3"] = round0(meter.pwr_ret[2]);
-    
-    root["enR"] = round3(enReturn); 
-    root["enC"] = round3(enCons); 
-    //root["aPo"] = round0(Power); 
-    root["gAs"] = round3(meter.gas); 
-    root["threeP"] = threePhase; 
-    root["rm"] = remote;
-   
-    serializeJson(root, * response);
-    request->send(response);
+        //add the remote-flag and the closing brace
+        snprintf(jsonWebui + index, sizeof(jsonWebui) - index,
+            ",\n  \"rm\": %d\n}",
+            remote
+        );
+
+        //send the complete char-array directly
+        request->send(200, "application/json", jsonWebui);
+
+        // 4. Herstel de buffer direct weer naar zijn schone, open status voor de volgende request
+        jsonWebui[index] = '\0';
+    } 
+    else {
+        // --- De veilige opstart-fallback (Ook 100% String-vrij!) ---
+        char fallbackJson[400];
+        snprintf(fallbackJson, sizeof(fallbackJson), 
+            "{\n"
+            "  \"timestamp\": \"--/-- --:--:--\",\n"
+            "  \"CON_HT\": 0.000,\n"
+            "  \"CON_LT\": 0.000,\n"
+            "  \"RET_HT\": 0.000,\n"
+            "  \"RET_LT\": 0.000,\n"
+            "  \"PWRC1\": 0,\n"
+            "  \"PWRR1\": 0,\n"
+            "  \"PWRC2\": 0,\n"
+            "  \"PWRR2\": 0,\n"
+            "  \"PWRC3\": 0,\n"
+            "  \"PWRR3\": 0,\n"
+            "  \"enR\": 0.000,\n"
+            "  \"enC\": 0.000,\n"
+            "  \"gAs\": 0.000,\n"
+            "  \"threeP\": %d,\n" // We sturen de echte fase-configuratie alvast mee
+            "  \"rm\": %d\n"       // De cruciale menuknop vlag!
+            "}", 
+            threePhase, remote
+        );
+        request->send(200, "application/json", fallbackJson);
+    }
 });
+
 
 server.on("/CONSOLE", HTTP_GET, [](AsyncWebServerRequest *request){
     if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
