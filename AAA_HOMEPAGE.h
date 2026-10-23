@@ -199,13 +199,14 @@ function change() {
 function pop1() {
   var popup = document.getElementById("myPopup");
   popup.classList.toggle("show");
-  popup.innerHTML="ENERGY USAGE<br>  high tariff : " + CON_HT + " kWh<br>  low tariff: " + CON_LT + " kWh";
+  popup.innerHTML = "ENERGY USAGE<br>  low tariff: " + CON_LT + " kWh<br>  high tariff : " + CON_HT + " kWh";
   setTimeout(change,200);
 }
 function pop2() {
   var popup = document.getElementById("myPopup");
   popup.classList.toggle("show");
-  popup.innerHTML="ENERGY RETURN<br>  high tariff : " + RET_HT + " kWh<br>  low tariff: " + RET_LT + " kWh";
+  popup.innerHTML="ENERGY RETURN<br>  high tariff: " + CON_HT + " kWh<br>  low tariff : " + CON_LT + " kWh";
+  
   setTimeout(change,200);
 }
 function pop3() {
