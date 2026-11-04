@@ -85,7 +85,8 @@
         consoleOut("print the files");
         actionFlag = 0; //reset the actionflag
         showDir();
-        printFiles(); 
+        printFiles();
+         
     }
 
      if (actionFlag == 48) { //triggered by console test-Serial1   

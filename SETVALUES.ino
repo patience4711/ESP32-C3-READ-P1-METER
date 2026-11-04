@@ -56,9 +56,9 @@ window.onload = loadMonthData;
 
 )=====";
 
+// if we de a  writeMonths then het values are written in the next month
 
-
-void zendPageVALUEconfig( AsyncWebServerRequest *request ) {
+void sendPageValconfig( AsyncWebServerRequest *request ) {
 
     String webPage = FPSTR(HTML_HEAD);
     webPage += FPSTR(VALUECONFIG);  

@@ -80,10 +80,10 @@ void makeJsonTemplateWU() {
     snprintf(jsonWebui, sizeof(jsonWebui),
         "{\n"
         "  \"timestamp\": \"%s\",\n"
-        "  \"CON_HT\": %.3f,\n"
         "  \"CON_LT\": %.3f,\n"
-        "  \"RET_HT\": %.3f,\n"
+        "  \"CON_HT\": %.3f,\n"
         "  \"RET_LT\": %.3f,\n"
+        "  \"RET_HT\": %.3f,\n"
         "  \"PWRC1\": %d,\n"
         "  \"PWRR1\": %d,\n"
         "  \"PWRC2\": %d,\n"

@@ -47,9 +47,8 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(knop), isr, FALLING);
 
   SPIFFS_read();
+  
   if(rxInvert) uart_set_line_inverse(UART_NUM_1, UART_SIGNAL_RXD_INV);
-  
-  
   
   
   my_wifiConnect.start_wifi();
@@ -96,7 +95,7 @@ void setup() {
   //int old_pollFreq = pollFreq;
   //pollFreq = 60;
   
-  meterPoll(false); //we do the first poll completely to fill the template
+ if(pollFreq != 0) meterPoll(false); //we do the first poll completely to fill the template
   //makeJsonTemplate;
   //pollFreq = old_pollFreq;
    delay(200);
@@ -109,16 +108,7 @@ void setup() {
 //*****************************************************************************
 void loop() {
 
-// if (WiFi.status() != WL_CONNECTED) {
-//   consoleOut("wifi was disconnected, reconnecting");
-//   start_wifi(); // ???
-//   //start_wifi();
-// }
-//if(moetZenden) send_testGram();
-//              polling every 60 seconds 
-// ******************************************************************
-
-   
+  
    if(pollFreq != 0)
    {
       unsigned long nu = millis();  // the time the program is running
@@ -150,41 +140,25 @@ void loop() {
       }
    }
 
-  //  if(pollFreq > 10)
-  //  {
-  //     unsigned long nu = millis();  // the time the program is running
-  //     if (nu - laatsteMeting >= 1000UL * pollFreq) 
-  //     {
-  //       if(diagNose) {
-  //       String toLog = String(pollFreq) + " seconds passed";
-  //         ws.textAll( toLog );
-  //       }
-  //         laatsteMeting += 1000UL * pollFreq ; // 
-  //         fastPoll = false;
-  //         meterPoll(); 
-  //         //digitalWrite(P1_ENABLE, LOW);
-  //     }
-  //  }
-  //  if (pollFreq >= 1 && pollFreq <= 10) {
-  //       unsigned long now = millis();
-  //       if (now - laatsteMeting >= 1000UL * pollFreq) {
-  //           meterPoll(); //this is a fast one
-  //           laatsteMeting += 1000Ul * pollFreq;
-  //       }
-  //   }
-  // when there is a new date the time is retrieved
+  
+  // when there is a new date the time will be retrieved
   // if retrieve fails, day will not be datum, so we keep trying
-  if (day() != datum) // if date overflew 
+  if (day() != datum) // de datum is zojuist overgevloeid om middernacht!
   { 
-        //fastPoll = false;
-        meterPoll(false);
-        delay(200);
-        
-        if(timeRetrieved) writeMonths(); // this writes all the months
-        // to prevent repetition we update datum
-        datum = day();
-
-       getTijd(); // retrieve internet time
+    meterPoll(false); // Doe een complete poll voor de meest actuele stand van middernacht
+    delay(200);
+    
+    // get the internet-time so that day() is 100% reliabble
+    getTijd(); 
+    
+    if (timeRetrieved == true) 
+    {
+         if (day() == 1) {
+             writeMonths();  // write to previous month (maand--)
+         } 
+        //writeMonths();
+        datum = day(); // Update de datum-wachtrij pas als het succesvol is opgeslagen
+    }
   }
   
   // we do this before sending polling info and healthcheck

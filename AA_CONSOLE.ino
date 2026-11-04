@@ -237,8 +237,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
                 ws.textAll("pollCounter = " + String(pollCounter)) ;
                 ws.textAll("poll duration: " + String(pollDurationMs) + " ms");
                 ws.textAll("read duration: " + String(readDurationMs) + " ms");
-                //ws.textAll("decode duration: " + String(decodeDurationMs) + " ms");
-                //ws.textAll("parse duration: " + String(parseDurationMs) + " ms");
+                ws.textAll("diagNose: " + String(diagNose));
+                ws.textAll("logMonth: " + String(logMonth));
+                ws.textAll("logDay: " + String(logDay));
                 //ws.textAll("api duration: " + String(apiDurationMs) + " ms");
           } else 
 

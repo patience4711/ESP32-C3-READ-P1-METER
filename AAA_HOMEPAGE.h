@@ -205,7 +205,7 @@ function pop1() {
 function pop2() {
   var popup = document.getElementById("myPopup");
   popup.classList.toggle("show");
-  popup.innerHTML="ENERGY RETURN<br>  high tariff: " + CON_HT + " kWh<br>  low tariff : " + CON_LT + " kWh";
+  popup.innerHTML="ENERGY RETURN<br>  low tariff: " + RET_LT + " kWh<br>  high tariff : " + RET_HT + " kWh";
   
   setTimeout(change,200);
 }
@@ -255,10 +255,10 @@ function getData() {
       var antwoord = this.responseText;
       var obj = JSON.parse(antwoord);
 //{"CON_HT":0,"CON_LT":51.775,"RET_HT":0,"RET_LT":24.413,"POWER_CON":0,"POWER_RET":0,"enR":24.413,"enC":51.775,"aPo":0,"gAs":16.713,"rm":0}
-      CON_HT = obj.CON_HT;
       CON_LT = obj.CON_LT;
-      RET_HT = obj.RET_HT;
+      CON_HT = obj.CON_HT;
       RET_LT = obj.RET_LT;
+      RET_HT = obj.RET_HT;
       PWRC1 =  obj.PWRC1; 
       PWRR1 =  obj.PWRR1;    
       PWRC2 =  obj.PWRC2; 

@@ -9,10 +9,16 @@ const char ABOUT [] PROGMEM = R"=====(
 <link rel="stylesheet" type="text/css" href="/STYLESHEET">
 <title>ESP-P1 METER</title>
 <style>
-table, th, td {border: 1px solid blue; width:font-size:12px; background-color: #ffffcc; }
+table, th, td {border: 1px solid blue; width: 50vw;box-sizing: border-box; font-size:12px; background-color: #ffffcc; }
 th, td { padding-left: 4px; padding-right: 4px;}
 th {background-color: #22ffb3;}
-body {font-size:12px;} tr {height:26px;} 
+body {font-size:12px;} tr {height:26px;}
+@media only screen and (max-width: 768px) {
+    table {
+        width: 96vw; 
+        margin: 0 auto;  
+    }
+} 
 </style>
 <script type="text/javascript" src="SECURITY"></script>
 <script> function cl() { window.location.href='/MENU'; }</script>
@@ -36,7 +42,7 @@ void handleAbout(AsyncWebServerRequest *request) {
   int dagen = urens/24;
  
   strcat(page, "<br><table><tr><TH colspan='2'>ESP SYSTEM INFORMATION</th></tr>" );
-  strcat(page, "<tr><td>firmware version<td>ESP32C3-P1METER-v0_5</tr>");
+  strcat(page, "<tr><td>firmware version<td>ESP32C3-P1METER-v0_6</tr>");
   if ( timeRetrieved ) strcat(page,"<tr><td>time retrieved<td>yes</tr>"); else strcat(page,"<tr><td>time retrieved<td>no</tr>");
   sprintf(temp, "<tr><td>systemtime<td> %d:%d " , hour(), minute());
   switch (dst) {

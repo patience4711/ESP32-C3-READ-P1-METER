@@ -96,10 +96,10 @@ server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
         snprintf(fallbackJson, sizeof(fallbackJson), 
             "{\n"
             "  \"timestamp\": \"--/-- --:--:--\",\n"
-            "  \"CON_HT\": 0.000,\n"
             "  \"CON_LT\": 0.000,\n"
-            "  \"RET_HT\": 0.000,\n"
+            "  \"CON_HT\": 0.000,\n"
             "  \"RET_LT\": 0.000,\n"
+            "  \"RET_HT\": 0.000,\n"
             "  \"PWRC1\": 0,\n"
             "  \"PWRR1\": 0,\n"
             "  \"PWRC2\": 0,\n"
@@ -210,7 +210,7 @@ server.on("/SETVALUES", HTTP_GET, [](AsyncWebServerRequest *request) {
     if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
     loginBoth(request, "admin");
     strcpy( requestUrl, request->url().c_str() );
-    zendPageVALUEconfig(request);
+    sendPageValconfig(request);
 });
 
 server.on("/GEOCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {

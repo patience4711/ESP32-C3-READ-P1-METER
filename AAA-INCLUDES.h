@@ -59,10 +59,10 @@ Preferences prefs;
 
 #include "REPORT.h"
 
-
-  //char ssid[33] = ""; // was 33 
-  //char pass[64] = ""; // was 40
-  //bool tryConnectFlag = false;
+bool templateMade;
+//String jsonPart1 = ""; // contains the non volatile data at the start untill the live data
+char jsonApi[600] = {0};      // Voor het HomeWizard /api/v1/smartmeter/data endpoint
+char jsonWebui[500] = {0};
 
  // variables wificonfig
   char pswd[11] = "0000";
@@ -90,9 +90,7 @@ Preferences prefs;
   int  gas_Idx = 123;
   int  el_Idx = 456;
 
-  bool baud9600;
-  bool rxInvert;
-  bool ledSignal;
+
   
   int event = 0;
   
@@ -101,16 +99,23 @@ Preferences prefs;
   int networksFound = 0; // used in the portal
   int datum = 0; //
 
-  unsigned long previousMillis = 0;        // will store last temp was read
+  //unsigned long previousMillis = 0;        // will store last temp was read
   static unsigned long laatsteMeting = 0; //wordt ook bij OTA gebruikt en bij wifiportal
-  static unsigned long lastCheck = 0; //wordt ook bij OTA gebruikt en bij wifiportal
-  //unsigned long lastP1ReadTime = 0;
+  //static unsigned long lastCheck = 0; //wordt ook bij OTA gebruikt en bij wifiportal
+  unsigned long pollDurationMs = 0;
+  unsigned long readDurationMs = 0;
+  //unsigned long decodeDurationMs = 0;
+  //unsigned long parseDurationMs = 0;
+  //unsigned long apiDurationMs = 0;
+  uint8_t pollCounter = 0;
 
+// pins
 #define knop              0  //
-//#define led_onb           8  // onboard led was 2
 #define P1_ENABLE         5 // gpio5 if high the RX of the meter is pulled high
 
-#define OBIS_SMR             "1-3:0.2.8("
+#define OBIS_SMR      "1-3:0.2.8("
+#define OBIS_UID      "0-0:96.1.1("
+#define OBIS_TAR      "0-0:96.14.0("
 #define OBIS_CON_LT   "1-0:1.8.1("
 #define OBIS_CON_HT   "1-0:1.8.2("
 #define OBIS_RET_LT   "1-0:2.8.1("
@@ -127,6 +132,8 @@ Preferences prefs;
 
 struct MeterData {
     uint8_t smr;
+    char uid[35];
+    int tariff;
     float   con_lt;
     float   con_ht;
     float   ret_lt;
@@ -138,24 +145,11 @@ struct MeterData {
 MeterData meter;
 
 String toSend = "";
- 
 int value = 0; 
 int aantal = 0;
 
+//int Mqtt_stateIDX = 0;
 
-int Mqtt_stateIDX = 0;
-
-// Vars to store meter readings//
-//float ECON_LT = 0; //Meter reading Electrics - consumption low tariff
-//float ECON_HT = 0; //Meter reading Electrics - consumption high tariff
-//float ERET_LT = 0; //Meter reading Electrics - return low tariff
-//float ERET_HT = 0; //Meter reading Electrics - return high tariff
-//float PACTUAL_CON = 0;  //Meter reading Electrics - Actual consumption
-//float PACTUAL_RET = 0;  //Meter reading Electrics - Actual return
-//float mGAS = 0;  //Meter reading Gas
-//long prevGAS = 0;
-//int SMR = 0;
-//char meterType[30]={"UNKNOWN"};
 // setup a struct for the values of each month
 typedef struct{
   float EC_LT = 0;
@@ -166,34 +160,32 @@ typedef struct{
 } m_values; 
 m_values MVALS[13]; 
 
-//unsigned int currentCRC = 0; //needs to be global?
-
-bool diagNose = true;
-int actionFlag = 0;
-char txBuffer[50];
-bool USB_serial = true;
+//settings vars
+bool baud9600;
+bool rxInvert;
+bool ledSignal;
+uint8_t diagNose=0;
 char meterType[30];
-bool polled = false;
-//bool Polling = false;
 int pollFreq = 300;
 bool threePhase = false;
-// voor testing
+
+int actionFlag = 0;
+char txBuffer[50];
+//bool USB_serial = true;
+
+
+
+// for the polling
 int www = 0;
-int maxTry = 5;
+bool polled = false;;
 char teleGram[1060]={"not polled"};
 char readCRC[5];
 int testLength;
-int errorCode = 0;
+//int errorCode = 0;
 int securityLevel = 0;
-//bool tested = false;
-//char logChar[150] = {"log: "};
+char logMonth[70] = {0};
+char logDay[70] = {0}; 
 #define P1_MAXLINELENGTH 1050
-//t currentCRC=0;
-//t tests = 0; // to prevent for an endless loop
-//ol endsign = false;
-//bool testTelegram = false;
+
 char timeStamp[20]={"not polled"};
-// // bluetooth settings and vars
-// #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-// #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-// #endif
+

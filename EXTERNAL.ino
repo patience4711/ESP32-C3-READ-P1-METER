@@ -42,7 +42,8 @@ if ( intern )
              return;
        } else
        
-        if ( serverUrl.indexOf("/READINGS") > -1) {
+       if ( serverUrl.indexOf("/READINGS") > -1) 
+       {
             // Start th HTML page with minimal styling for the table
             String html = "<html><head><meta name='viewport' content='width=width, initial-scale=1.0'>";
             html += "<style>";
@@ -59,84 +60,96 @@ if ( intern )
             html += "<tr><th>Month</th><th>cons LT (kWh)</th><th>cons HT(kWh)</th><th>Return LT (kWh)</th><th>Return HT (kWh)</th><th>Gas (m3)</th></tr>";
 
             // walk through the months 1 to 12
-            for (int m = 1; m <= 12; m++) {
-               html += "<tr>";
-               html += "<td><b>" + String(m) + "</b></td>";
-               html += "<td>" + String(MVALS[m].EC_LT, 3) + "</td>";
-               html += "<td>" + String(MVALS[m].EC_HT, 3) + "</td>";
-               html += "<td>" + String(MVALS[m].ER_LT, 3) + "</td>";
-               html += "<td>" + String(MVALS[m].ER_HT, 3) + "</td>";
-               html += "<td>" + String(MVALS[m].mGAS, 3) + "</td>";
-               html += "</tr>";
+            for (int m = 1; m <= 12; m++) 
+            {
+               if( m == month()) {
+                  html += "<tr>";
+                  html += "<td><b>" + String(m) + "</b></td>";
+                  html += "<td>" + String(meter.con_lt, 3) + "</td>";
+                  html += "<td>" + String(meter.con_ht, 3) + "</td>";
+                  html += "<td>" + String(meter.ret_lt, 3) + "</td>";
+                  html += "<td>" + String(meter.ret_ht, 3) + "</td>";
+                  html += "<td>" + String(meter.gas, 3) + "</td>";
+                  html += "</tr>";    
+               } else {
+                  html += "<tr>";
+                  html += "<td><b>" + String(m) + "</b></td>";
+                  html += "<td>" + String(MVALS[m].EC_LT, 3) + "</td>";
+                  html += "<td>" + String(MVALS[m].EC_HT, 3) + "</td>";
+                  html += "<td>" + String(MVALS[m].ER_LT, 3) + "</td>";
+                  html += "<td>" + String(MVALS[m].ER_HT, 3) + "</td>";
+                  html += "<td>" + String(MVALS[m].mGAS, 3) + "</td>";
+                  html += "</tr>";
+               }
             }
             html += "</table></body></html>";
-
-            request->send(200, "text/html", html);
+            AsyncWebServerResponse *response = request->beginResponse(200, "text/html", html);
+            response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            request->send(response);
             return;
       } else
-
+      if ( serverUrl.indexOf("/CHECKMONTH") > -1) {
+            int m = 1;
+            if (request->hasParam("mnr")) {
+               m = request->arg("mnr").toInt();
+            }
+            JsonDocument doc;
+            // Veiligheidscheck voor de array-grenzen
+            if (m < 1 || m > 12) m = 1;
+            if (m == month() ) {
+            doc["meter_econlt"] = meter.con_lt;
+            doc["meter_econht"] = meter.con_ht;
+            doc["meter_eretlt"] = meter.ret_lt;
+            doc["meter_eretht"] = meter.ret_ht;
+            doc["meter.mgas"]   = meter.gas;  
+            
+            doc["MVALS_econlt"] = MVALS[m].EC_LT;
+            doc["MVALS_econht"] = MVALS[m].EC_HT;
+            doc["MVALS_eretlt"] = MVALS[m].ER_LT;
+            doc["MVALS_eretht"] = MVALS[m].ER_HT;
+            doc["MVALS_mgas"]   = MVALS[m].mGAS;
+            
+            } else {
+            doc["MVALS_econlt"] = MVALS[m].EC_LT;
+            doc["MVALS_econht"] = MVALS[m].EC_HT;
+            doc["MVALS_eretlt"] = MVALS[m].ER_LT;
+            doc["MVALS_eretht"] = MVALS[m].ER_HT;
+            doc["MVALS_mgas"]   = MVALS[m].mGAS;
+            }
+            String response;
+            serializeJson(doc, response);
+            request->send(200, "application/json", response);
+            return;
+      } else
+      
       if ( serverUrl.indexOf("/GETMONTH") > -1) {
             int m = 1;
             if (request->hasParam("mnr")) {
                m = request->arg("mnr").toInt();
             }
-            
+            JsonDocument doc;
             // Veiligheidscheck voor de array-grenzen
             if (m < 1 || m > 12) m = 1;
-
-            JsonDocument doc;
-            doc["econht"] = MVALS[m].EC_HT;
+            if (m == month() ) {
+            doc["econlt"] = meter.con_lt;
+            doc["econht"] = meter.con_ht;
+            doc["eretlt"] = meter.ret_lt;
+            doc["eretht"] = meter.ret_ht;
+            doc["mgas"]   = meter.gas;  
+            } else {
             doc["econlt"] = MVALS[m].EC_LT;
-            doc["eretht"] = MVALS[m].ER_HT;
+            doc["econht"] = MVALS[m].EC_HT;
             doc["eretlt"] = MVALS[m].ER_LT;
+            doc["eretht"] = MVALS[m].ER_HT;
             doc["mgas"]   = MVALS[m].mGAS;
-
+            }
             String response;
             serializeJson(doc, response);
             request->send(200, "application/json", response);
             return;
             }
       
-      //  if ( serverUrl.indexOf("/get.ResetReason") > -1) {
-      //   //consoleOut("reset check");
-      //   prefs.begin("reset_log", false); //namespace name is reset_log
-      //   int lastReset = prefs.getInt("reason", -1);
-      //   Serial.print("Last saved reset reason: ");
-      //   esp_reset_reason_t reason = esp_reset_reason();
-      //   String r_r = "last reset reason = " + String(lastReset);
-      //   r_r += "\ncurrent reset reason = " + String(reason);
-      //   r_r += "\nCode Meaning \n1 Power-on reset \n2 External reset\n3 Software reset";
-      //   r_r += "\n4 Watchdog timer reset\n5 Deep sleep wakeup\n6 Brownout reset";
-      //   prefs.end();
-      //   request->send(500, "text/plain", r_r );
-      //   return;
-         
-      //  }
-//                               
-//            //char temp[13]={0};
-//            //uint8_t remote = 0;
-//            //remote = 1; // for the menu link
-//            AsyncResponseStream *response = request->beginResponseStream("application/json");
-//            DynamicJsonDocument root(512); //(length current 291);
-//   
-//    root["smr_version"] = 50;
-//    root["meter_model"] = "XS210";
-//    root["wifi_ssid"] = "hansiart";
-//    root["wifi_strength"] = 108;
-//    root["total_power_import_t1_kwh"] = round3(ECON_HT);
-//    root["total_power_import_t2_kwh"] = round3(ECON_LT);
-//    root["total_power_export_t1_kwh"] = round3(ERET_HT);
-//    root["total_power_export_t2_kwh"] = round3(ERET_LT);    
-//    root["active_power_w"]    = round0(PACTUAL_CON);
-//    root["active_power_l1_w"] = round0(PACTUAL_RET);
-//    String jsonString;
-//    serializeJson(root, * response);
-//    request->send(response);
-//    // Final heap check
-//    Serial.printf("[API] Free heap after request->send: %u bytes\n", ESP.getFreeHeap());
-//    return;
-//   }
-// if we are here, no valid api was found    
+  
    request->send ( 200, "text/plain", "ERROR this link is invalid, go back <--" );//send not found message
    
    } else { // not intern

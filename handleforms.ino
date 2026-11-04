@@ -4,7 +4,7 @@ void handleForms(AsyncWebServerRequest *request) {
      String serverUrl = request->url().c_str();
      Serial.println("serverUrl = " + serverUrl); // this is /submitform 
 
-     if(request->hasParam("mType")) {
+     if(request->hasParam("pfreq")) {
          // received form basisconfig
          strcpy(userPwd, request->arg("pw1").c_str());
          // the metertype is a char
@@ -15,7 +15,7 @@ void handleForms(AsyncWebServerRequest *request) {
               
          pollFreq = request->arg("pfreq").toInt(); //values are 3 4 5 6 7 30 60 300
          //if(request->hasParam("pL")) Polling = true; else Polling = false;
-         if(request->hasParam("debug")) diagNose = true;  else diagNose = false;
+         if(request->hasParam("debug")) diagNose = 2;  else diagNose = 0;
          if(request->hasParam("lsig")) ledSignal = true;  else ledSignal = false;
          if(request->hasParam("brt")) baud9600 = true;  else baud9600 = false;
          if(request->hasParam("rxi")) rxInvert = true;  else rxInvert = false;
@@ -45,14 +45,35 @@ void handleForms(AsyncWebServerRequest *request) {
       if(request->hasParam("econht")) {
         // received the setvalues form  names are econht, econlt eretht, eretlt, mnr
         int mth = request->arg("mnr").toInt();
-        
-        MVALS[mth].EC_HT = request->arg("econht").toFloat();
-        MVALS[mth].EC_LT = request->arg("econlt").toFloat();
-        MVALS[mth].ER_HT = request->arg("eretht").toFloat();
-        MVALS[mth].ER_LT = request->arg("eretlt").toFloat();
-        MVALS[mth].mGAS  = request->arg("mGas").toFloat();
+        if (mth == 13) mth = 1;
+        consoleOut("received a form for setValues, month = " + String(mth));
+        // if we fill values for 10, the are written in 9
+        // because writeMonth does this. This means that we must add 1 to mnt
+        if(mth == month()){
+            // we put the values in meter
+            meter.con_lt = request->arg("econlt").toFloat();
+            meter.con_ht = request->arg("econht").toFloat();
+            meter.ret_lt = request->arg("eretlt").toFloat();
+            meter.ret_ht = request->arg("eretht").toFloat();
+            meter.gas  = request->arg("mGas").toFloat();
+            // we must have old values in MVALS[month()] so we do
+            MVALS[mth].EC_LT = 900.000;  // in 12 we have 980
+            MVALS[mth].EC_HT = 1900.000; // 1980
+            MVALS[mth].ER_LT = 2900.000; // 2980
+            MVALS[mth].ER_HT = 3900.000; // 3980
+            MVALS[mth].mGAS  = 4900.000; // 4980
+            writeMonthsTest();
 
-        writeMonths();
+        } else {
+            MVALS[mth].EC_LT = request->arg("econlt").toFloat();
+            MVALS[mth].EC_HT = request->arg("econht").toFloat();
+            MVALS[mth].ER_LT = request->arg("eretlt").toFloat();
+            MVALS[mth].ER_HT = request->arg("eretht").toFloat();
+            MVALS[mth].mGAS  = request->arg("mGas").toFloat();
+            writeMonthsTest();
+  
+        }
+        //writeMonths();
         return;
      } else
      
