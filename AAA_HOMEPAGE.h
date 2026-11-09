@@ -51,18 +51,18 @@ tr {background-color:#ccffcc;}
 /* The actual popup */
 .popup .popuptext {
   visibility: hidden;
-  width: 200px;
+  width: max-content;
+  white-space:nowrap;
   background-color: #090963;
   color: #fff;
   text-align: left;
   border-radius: 6px;
-  padding: 8px 0;
+  padding: 8px 12px;
   padding-left:20px;
   position: absolute;
   z-index: 1;
   bottom: 125%;
-  left: 0%;
-  margin-left: -80px;
+  right: 0%;
 }
 
 /* Popup arrow */
@@ -70,7 +70,7 @@ tr {background-color:#ccffcc;}
   content: "";
   position: absolute;
   top: 100%;
-  left: 70%;
+  right: 25px;
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
@@ -105,7 +105,10 @@ th, td { font-size:11px; }
 #td1 {width:100px;}
 #td2 {width:40px;}
 #td3 {width:80px}
-.popup .popuptext {width: 160px;}
+
+  .popup .popuptext {
+       padding: 8px 12px;
+  }
 
 tr {height:35px;} 
 .btn { padding: 5px 18px; font-size:10px;}
@@ -139,11 +142,11 @@ tr {height:35px;}
           <center><table>
           <tr style='Background-color:lightblue; font-weight:bold; text-align:center; border:4px solid black;'>
           <td id="td0">MEDIUM<td id="td1">AMOUNT<td id="td2">UNIT<td id="td3">DETAILS</tr>
-          <tr><td>energy usage</td><td id="p01"></td><td>kWh</td><td><div class='popup'><button class='btn' id='btn1'>details</button><span class='popuptext' id='myPopup'></span><div></tr>
-          <tr><td>energy return</td><td id="p11"></td><td>kWh</td><td><button class='btn' id='btn2'>details</button></tr>
-          <tr><td>power ph 1</td><td id="p21"></td><td>W</td><td><button class='btn' id='btn3'>details</button></tr>
-          <tr class='phase-row'><td>power ph 2</td><td id="p22"></td><td>W</td><td><button class='btn' id='btn4'>details</button></tr>
-          <tr class='phase-row'><td>power ph 3</td><td id="p23"></td><td>W</td><td><button class='btn' id='btn5'>details</button></tr>
+          <tr><td>energy usage</td><td id="p01"></td><td>kWh</td><td><div class='popup'><button class='btn' id='btn1'>details</button><span class='popuptext' id='myPopup1'></span><div></td></tr>
+          <tr><td>energy return</td><td id="p11"></td><td>kWh</td><td><div class='popup'><button class='btn' id='btn2'>details</button><span class='popuptext' id='myPopup2'></span><div></td></tr>
+          <tr><td>power ph 1</td><td id="p21"></td><td>W</td><td>
+          <tr class='phase-row'><td>power ph 2</td><td id="p22"></td><td>W</td>
+          <tr class='phase-row'><td>power ph 3</td><td id="p23"></td><td>W</td></tr>
           <tr><td>gas consumed</td><td id="p31"></td><td>m3</td><td id="p30"></tr>
         </table>
         </div>  
@@ -161,7 +164,6 @@ const char JAVA_SCRIPT[] PROGMEM = R"=====(
 
 var btn1 = document.getElementById('btn1');
 var btn2 = document.getElementById('btn2');
-var btn3 = document.getElementById('btn3');
 var popup = document.getElementById("myPopup");
 console.log("btn1 = " + btn1);
 var CON_HT;
@@ -183,56 +185,92 @@ function loadScript() {
 function init() {
   btn1.addEventListener('click', pop1);
   btn2.addEventListener('click', pop2);
-  btn3.addEventListener('click', pop3);
-  btn4.addEventListener('click', pop4);
-  btn5.addEventListener('click', pop5);
+  // Luister ALTIJD naar kliks op de achtergrond om te sluiten
+  document.addEventListener('click', hidePopup);
+}
+
+function pop1(e) {
+  // Voorkom dat deze klik direct hidePopup activeert
+  if (e) e.stopPropagation();
+
+  // 1. Verberg altijd direct popup 2
+  var popup2 = document.getElementById("myPopup2");
+  if (popup2) popup2.classList.remove("show");
+
+  // 2. Open / toggle popup 1
+  var popup = document.getElementById("myPopup1");
+  popup.classList.toggle("show");
+  popup.innerHTML = "ENERGY USAGE<br>  high tariff : " + CON_HT + " kWh<br>  low tariff: " + CON_LT + " kWh";
+}
+
+function pop2(e) {
+  // Voorkom dat deze klik direct hidePopup activeert
+  if (e) e.stopPropagation();
+
+  // 1. Verberg altijd direct popup 1
+  var popup1 = document.getElementById("myPopup1");
+  if (popup1) popup1.classList.remove("show");
+
+  // 2. Open / toggle popup 2
+  var popup = document.getElementById("myPopup2");
+  popup.classList.toggle("show");
+  popup.innerHTML = "ENERGY RETURN<br>  high tariff : " + RET_HT + " kWh<br>  low tariff: " + RET_LT + " kWh";
+}
+
+function hidePopup(e) {
+  // Als je op een button klikt, hoeft hidePopup niets te doen
+  if (e.target.classList.contains('btn')) return;
+  
+  // Sluit allebei de popups zodra er op de achtergrond wordt geklikt
+  var popup1 = document.getElementById("myPopup1");
+  var popup2 = document.getElementById("myPopup2");
+  
+  if (popup1) popup1.classList.remove("show");
+  if (popup2) popup2.classList.remove("show");
+}
+
+
+/*function init() {
+  btn1.addEventListener('click', pop1);
+  btn2.addEventListener('click', pop2);
   document.removeEventListener('click', hidePopup);
 }
 function change() {
   btn1.removeEventListener('click', pop1);
   btn2.removeEventListener('click', pop2);
-  btn3.removeEventListener('click', pop3);
-  btn4.removeEventListener('click', pop4);
-  btn5.removeEventListener('click', pop5);
   document.addEventListener('click', hidePopup);
 }
 function pop1() {
-  var popup = document.getElementById("myPopup");
+  var popup2 = document.getElementById("myPopup2");
+  if (popup2) {
+    popup2.classList.remove("show");
+  }
+  var popup = document.getElementById("myPopup1");
   popup.classList.toggle("show");
-  popup.innerHTML = "ENERGY USAGE<br>  low tariff: " + CON_LT + " kWh<br>  high tariff : " + CON_HT + " kWh";
+  popup.innerHTML="ENERGY USAGE<br>  high tariff : " + CON_HT + " kWh<br>  low tariff: " + CON_LT + " kWh";
   setTimeout(change,200);
 }
 function pop2() {
-  var popup = document.getElementById("myPopup");
+  var popup1 = document.getElementById("myPopup1");
+  if (popup1) {
+    popup1.classList.remove("show");
+  }
+  var popup = document.getElementById("myPopup2");
   popup.classList.toggle("show");
-  popup.innerHTML="ENERGY RETURN<br>  low tariff: " + RET_LT + " kWh<br>  high tariff : " + RET_HT + " kWh";
-  
+  popup.innerHTML="ENERGY RETURN<br>  high tariff : " + RET_HT + " kWh<br>  low tariff: " + RET_LT + " kWh";
   setTimeout(change,200);
 }
-function pop3() {
-  var popup = document.getElementById("myPopup");
-  popup.classList.toggle("show");
-  popup.innerHTML="PWR PHASE 1<br>  usage : " + PWRC1 + " W<br>  return : " + PWRR1 + " W";
-  setTimeout(change,200);
-}
-function pop4() {
-  var popup = document.getElementById("myPopup");
-  popup.classList.toggle("show");
-  popup.innerHTML="PWR PHASE 2<br>  usage : " + PWRC2 + " W<br>  return : " + PWRR2 + " W";
-  setTimeout(change,200);
-}
-function pop5() {
-  var popup = document.getElementById("myPopup");
-  popup.classList.toggle("show");
-  popup.innerHTML="PWR PHASE 3<br>  usage : " + PWRC3 + " W<br>  return : " + PWRR3 + " W";
-  setTimeout(change,200);
-}
+*/
 function hidePopup(a) {
-  var popup = document.getElementById("myPopup");
-   //popup.style.visibility='hidden';
-   popup.classList.toggle("show");
+  // Close both popups when there is clicked somewhere on the screen
+  var popup1 = document.getElementById("myPopup1");
+  var popup2 = document.getElementById("myPopup2");
+  
+  if (popup1) popup1.classList.remove("show");
+  if (popup2) popup2.classList.remove("show");
+   //popup.classList.toggle("show");
+   document.removeEventListener('click', hidePopup);
    init();
-   //setTimeout(init,0);
    }
 
 window.addEventListener('visibilitychange', () => {
@@ -255,10 +293,10 @@ function getData() {
       var antwoord = this.responseText;
       var obj = JSON.parse(antwoord);
 //{"CON_HT":0,"CON_LT":51.775,"RET_HT":0,"RET_LT":24.413,"POWER_CON":0,"POWER_RET":0,"enR":24.413,"enC":51.775,"aPo":0,"gAs":16.713,"rm":0}
-      CON_LT = obj.CON_LT;
       CON_HT = obj.CON_HT;
-      RET_LT = obj.RET_LT;
+      CON_LT = obj.CON_LT;
       RET_HT = obj.RET_HT;
+      RET_LT = obj.RET_LT;
       PWRC1 =  obj.PWRC1; 
       PWRR1 =  obj.PWRR1;    
       PWRC2 =  obj.PWRC2; 
