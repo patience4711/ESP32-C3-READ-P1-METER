@@ -11,7 +11,7 @@ This means that demanding clients like a battery that wants 'real-time' data, ca
 
 ![frontpage](https://github.com/patience4711/ESP-READ-P1-METER/assets/12282915/bb65cf1f-f6bf-4e1c-ae48-c379628f3a7a)<br>
 
-I know this has been done before but not this project has more features. For instance, this is comaptible with the Home Wizzard P1 dongle.<br>The ESP32C3 can be fed with the 5v of the meter. Since i have other projects which partially use the same software, it is only a small step to adapt it to a new function. So it inherits many nice features from the other projects. 
+I know this has been done before but not this project has more features. For instance, this is compatible with the Home Wizzard P1 dongle.<br>The ESP32C3 can be fed with the 5v of the meter. Since i have other projects which partially use the same software, it is only a small step to adapt it to a new function. So it inherits many nice features from the other projects. 
 
 The program has a lot of smart features. All settings can be done via the webinterface. Because the ESP32 has multiple serial ports, we have plenty debugging options. We can use a web console or the usb serial. In the console we can call some processes and watch the output. 
 See the [WIKI](https://github.com/patience4711/ESP-READ-P1-METER/wiki/GENERAL) for information on building it, the working, etc. 
