@@ -1,6 +1,6 @@
 # ESP32-C3-READ-P1-METER
 
-Just like the HomeWizzard p1 dongle, the purpose of this project is to read data from a so called smart meter (e.g. model Sagecom 210 ESMR5) via its serial port. The goal is to be completely compatible with the HW dongle.<br>
+Just like the HomeWizzard p1 dongle, the purpose of this project is to read data from a so called smart meter (e.g. model Sagecom 210 ESMR5) via its serial port. The goal is to be completely compatible with the HomeWizzard dongle.<br>
 All we have to do is connect an ESP32C3 device (tested with ESP32C3-super mini) via an rj11 cable to the serial port of the meter. The data is made available via mosquitto or an API and is also displayed on a webpage.  Now we can process the data in our domotica systems like 'Domotics' to display graphs, control switches or manage a homebattery.<br>The API is compatible with the p1 dongle from HomeWizzard. To get data, the api is http://ip_of_p1meter/api/v1/data. If you want simple data f.i. for a solar diverter: http://ip_of_p1meter/api/v1/simple 
 
 # test results
